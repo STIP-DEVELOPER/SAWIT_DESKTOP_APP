@@ -1,98 +1,81 @@
 from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
     QWidget,
     QLabel,
-    QPushButton,
     QTextEdit,
+    QPushButton,
     QGridLayout,
-    QHBoxLayout,
     QVBoxLayout,
-    QGroupBox,
+    QHBoxLayout,
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
+from core.camera_handler import CameraThread
 
 
-class Ui_MainWindow(QWidget):
+class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.init_ui()
+        self.setWindowTitle("Sistem Pemupuk Otomatis Sawit")
+        self.setGeometry(100, 100, 1200, 700)
 
-    def init_ui(self):
-        self.setWindowTitle("Sawit Detection System")
-        self.setStyleSheet(
-            """
-            QWidget {
-                background-color: #f6f8fa;
-                font-family: Arial;
-            }
-            QLabel {
-                color: #333;
-                font-size: 14px;
-            }
-            QPushButton {
-                background-color: #1976d2;
-                color: white;
-                border-radius: 6px;
-                padding: 6px 10px;
-            }
-            QPushButton:hover {
-                background-color: #1565c0;
-            }
-            QTextEdit {
-                background-color: #fff;
-                border: 1px solid #ccc;
-                border-radius: 6px;
-            }
-        """
+        # === WIDGET UTAMA ===
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # === LABEL UNTUK VIDEO FEED ===
+        self.label_camera_left = QLabel("Kamera Kiri")
+        self.label_camera_right = QLabel("Kamera Kanan")
+        self.label_camera_left.setAlignment(Qt.AlignCenter)
+        self.label_camera_right.setAlignment(Qt.AlignCenter)
+        self.label_camera_left.setStyleSheet("background-color: #2c3e50; color: white;")
+        self.label_camera_right.setStyleSheet(
+            "background-color: #2c3e50; color: white;"
         )
 
-        # --- Video feed section ---
-        self.video_left = QLabel("Video Kiri")
-        self.video_left.setFixedSize(320, 240)
-        self.video_left.setStyleSheet("background-color: #ddd; border-radius: 8px;")
+        # === LOG PANEL ===
+        self.text_log = QTextEdit()
+        self.text_log.setReadOnly(True)
 
-        self.video_right = QLabel("Video Kanan")
-        self.video_right.setFixedSize(320, 240)
-        self.video_right.setStyleSheet("background-color: #ddd; border-radius: 8px;")
+        # === BUTTON CONTROL ===
+        self.btn_manual_on = QPushButton("🔆 Aktifkan Motor")
+        self.btn_manual_off = QPushButton("💤 Matikan Motor")
 
-        video_layout = QHBoxLayout()
-        video_layout.addWidget(self.video_left)
-        video_layout.addWidget(self.video_right)
+        # === LAYOUT SETUP ===
+        layout = QGridLayout()
+        layout.addWidget(self.label_camera_left, 0, 0)
+        layout.addWidget(self.label_camera_right, 0, 1)
 
-        video_group = QGroupBox("Kamera")
-        video_group.setLayout(video_layout)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.btn_manual_on)
+        button_layout.addWidget(self.btn_manual_off)
+        layout.addLayout(button_layout, 1, 0, 1, 2)
 
-        # --- Control section ---
-        self.label_distance = QLabel("Distance: --- m")
-        self.label_status = QLabel("Status: ---")
+        layout.addWidget(QLabel("Log Aktivitas:"), 2, 0, 1, 2)
+        layout.addWidget(self.text_log, 3, 0, 1, 2)
+        central_widget.setLayout(layout)
 
-        self.btn_motor_on = QPushButton("Aktifkan Motor")
-        self.btn_motor_off = QPushButton("Matikan Motor")
-        self.btn_auto_mode = QPushButton("Mode Otomatis: OFF")
+        # === INISIASI KAMERA ===
+        self.init_cameras()
 
-        control_layout = QHBoxLayout()
-        control_layout.addWidget(self.label_distance)
-        control_layout.addWidget(self.label_status)
-        control_layout.addWidget(self.btn_motor_on)
-        control_layout.addWidget(self.btn_motor_off)
-        control_layout.addWidget(self.btn_auto_mode)
+    def init_cameras(self):
+        self.camera_left = CameraThread(0, "left")  # kamera 0
+        self.camera_right = CameraThread(1, "right")  # kamera 1
 
-        control_group = QGroupBox("Kontrol")
-        control_group.setLayout(control_layout)
+        self.camera_left.frame_update.connect(self.update_frame)
+        self.camera_right.frame_update.connect(self.update_frame)
 
-        # --- Log section ---
-        self.log_box = QTextEdit()
-        self.log_box.setReadOnly(True)
-        self.log_box.append("[System] Initialized...")
+        self.camera_left.start()
+        self.camera_right.start()
 
-        log_group = QGroupBox("Log Aktivitas")
-        log_layout = QVBoxLayout()
-        log_layout.addWidget(self.log_box)
-        log_group.setLayout(log_layout)
+    def update_frame(self, image, camera_name):
+        if camera_name == "left":
+            self.label_camera_left.setPixmap(QPixmap.fromImage(image))
+        elif camera_name == "right":
+            self.label_camera_right.setPixmap(QPixmap.fromImage(image))
 
-        # --- Main layout ---
-        layout = QVBoxLayout()
-        layout.addWidget(video_group)
-        layout.addWidget(control_group)
-        layout.addWidget(log_group)
-
-        self.setLayout(layout)
+    def closeEvent(self, event):
+        self.camera_left.stop()
+        self.camera_right.stop()
+        event.accept()
