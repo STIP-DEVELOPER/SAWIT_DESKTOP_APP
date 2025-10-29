@@ -1,0 +1,82 @@
+# ============================================
+# Python project (PyQt5 + OpenCV + YOLOv5n)
+# ============================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# PyInstaller
+# Usually these are binary builds or temp files
+build/
+dist/
+*.spec
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# YOLO / Ultralytics cache and runs folder
+runs/
+*.pt
+*.onnx
+*.engine
+*.tflite
+*.xml
+*.bin
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+.history/
+.settings/
+
+# Test / debug output
+debug/
+temp/
+tmp/
+
+# Images / dataset samples
+dataset/
+images/
+videos/
+captures/
+
+# Raspberry Pi specific caches
+__pycache__/
+*.pyc
+*.swp
+
+# Node or frontend (if you later use PyQt + webview)
+node_modules/
+npm-debug.log*
+
+# Backup files
+*~
+*.bak
+*.old
+*.orig
+*.tmp
+
+# Config files (keep secrets out of git)
+config.json
+config.yaml
+.env.local
+.env.production
+.env.development
