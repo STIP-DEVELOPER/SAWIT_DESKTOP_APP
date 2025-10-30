@@ -1,7 +1,7 @@
 from core.camera_capture import CameraCapture
 from core.inference_worker import InferenceWorker
 from core.utils import convert_frame_to_qpixmap
-from src.configs import config
+from configs import config
 
 
 class MainController:

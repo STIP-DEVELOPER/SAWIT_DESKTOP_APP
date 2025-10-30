@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QTextEdit,
 )
 from PyQt5.QtCore import Qt
-from src.configs import config
+from configs import config
 
 
 class MainWindow(QWidget):
