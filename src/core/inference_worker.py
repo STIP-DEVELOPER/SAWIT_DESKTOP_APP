@@ -5,7 +5,7 @@ from collections import deque
 from PyQt5.QtCore import QThread, pyqtSignal
 from ultralytics import YOLO
 from core.utils import draw_boxes_on_frame
-from core import config
+from src.configs import config
 
 
 class InferenceWorker(QThread):

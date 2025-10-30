@@ -21,7 +21,7 @@ QUEUE_MAXLEN = 2  # Maximum queue size per camera (for frame buffering)
 # ------------------------------------------------------------
 # USER INTERFACE CONFIGURATION
 # ------------------------------------------------------------
-WINDOW_TITLE = "Dual Camera YOLO Detector"
+WINDOW_TITLE = "SAWIT APP"
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 

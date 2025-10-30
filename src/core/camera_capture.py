@@ -1,7 +1,7 @@
 import cv2
 import time
 from PyQt5.QtCore import QThread, pyqtSignal
-from core import config
+from src.configs import config
 
 
 class CameraCapture(QThread):
