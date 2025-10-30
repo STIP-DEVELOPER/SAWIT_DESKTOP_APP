@@ -1,0 +1,14 @@
+[project]
+name = "desktop"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy<2",
+    "opencv-python>=4.11.0.86",
+    "pyqt5>=5.15.11",
+    "pyserial>=3.5",
+    "torch==2.2.2",
+    "ultralytics>=8.3.222",
+]
