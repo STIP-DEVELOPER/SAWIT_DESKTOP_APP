@@ -1,52 +1,45 @@
-from PyQt5.QtCore import QThread, pyqtSignal
 import cv2
 import time
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class CameraCapture(QThread):
-    frame_ready = pyqtSignal(object)  # numpy frame
-    error = pyqtSignal(str)
+    frame_ready = pyqtSignal(object)
+    log = pyqtSignal(str)
 
-    def __init__(self, index=0, name="Camera", fps=20, backend=None, parent=None):
+    def __init__(self, camera_index=0, name="left", parent=None):
         super().__init__(parent)
-        self.index = index
+        self.camera_index = camera_index
         self.name = name
-        self.fps = fps
-        self._running = False
         self.cap = None
-        self.backend = backend
+        self.running = False
 
     def run(self):
+        self.running = True
         try:
-            if self.backend is not None:
-                self.cap = cv2.VideoCapture(self.index, self.backend)
-            else:
-                self.cap = cv2.VideoCapture(self.index)
-            if not self.cap or not self.cap.isOpened():
-                self.error.emit(
-                    f"{self.name}: Tidak dapat membuka kamera index={self.index}"
+            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_AVFOUNDATION)
+            if not self.cap.isOpened():
+                self.log.emit(
+                    f"[Camera-{self.name}] Tidak dapat membuka kamera {self.camera_index}."
                 )
                 return
+            self.log.emit(f"[Camera-{self.name}] Kamera {self.camera_index} aktif.")
 
-            self._running = True
-            interval = 1.0 / max(1, self.fps)
-            while self._running:
+            while self.running:
                 ret, frame = self.cap.read()
-                if not ret or frame is None:
-                    self.error.emit(
-                        f"{self.name}: Gagal membaca frame dari kamera index={self.index}"
-                    )
-                    time.sleep(0.2)
+                if not ret:
+                    self.log.emit(f"[Camera-{self.name}] Gagal membaca frame.")
+                    time.sleep(0.1)
                     continue
                 self.frame_ready.emit(frame)
-                time.sleep(interval)
+                time.sleep(0.03)  # batasi ~30 FPS
         except Exception as e:
-            self.error.emit(f"{self.name}: Exception: {e}")
+            self.log.emit(f"[Camera-{self.name}] Error: {e}")
         finally:
-            if self.cap and self.cap.isOpened():
+            if self.cap:
                 self.cap.release()
-            self._running = False
+                self.log.emit(f"[Camera-{self.name}] Dihentikan.")
 
     def stop(self):
-        self._running = False
-        self.wait(timeout=2000)
+        self.running = False
+        self.wait()
