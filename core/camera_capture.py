@@ -1,6 +1,7 @@
 import cv2
 import time
 from PyQt5.QtCore import QThread, pyqtSignal
+from core import config
 
 
 class CameraCapture(QThread):
@@ -17,7 +18,7 @@ class CameraCapture(QThread):
     def run(self):
         self.running = True
         try:
-            self.cap = cv2.VideoCapture(self.camera_index, cv2.CAP_AVFOUNDATION)
+            self.cap = cv2.VideoCapture(self.camera_index, config.CAMERA_BACKEND)
             if not self.cap.isOpened():
                 self.log.emit(
                     f"[Camera-{self.name}] Tidak dapat membuka kamera {self.camera_index}."
@@ -32,7 +33,8 @@ class CameraCapture(QThread):
                     time.sleep(0.1)
                     continue
                 self.frame_ready.emit(frame)
-                time.sleep(0.03)  # batasi ~30 FPS
+                time.sleep(config.FRAME_DELAY)
+
         except Exception as e:
             self.log.emit(f"[Camera-{self.name}] Error: {e}")
         finally:

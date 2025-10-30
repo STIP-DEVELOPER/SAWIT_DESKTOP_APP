@@ -12,13 +12,14 @@ from PyQt5.QtCore import Qt
 from core.camera_capture import CameraCapture
 from core.inference_worker import InferenceWorker
 from core.utils import convert_frame_to_qpixmap
+from core import config
 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Dual Camera YOLO Detector")
-        self.resize(1280, 720)
+        self.setWindowTitle(config.WINDOW_TITLE)
+        self.resize(config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
 
         # === UI Components ===
         self.left_label = QLabel("Camera Left")
@@ -46,9 +47,13 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
         # === Components ===
-        self.left_camera = CameraCapture(0)
-        self.right_camera = CameraCapture(1)
-        self.inference_worker = InferenceWorker(model_path="models/yolov5n.pt")
+        self.left_camera = CameraCapture(config.LEFT_CAMERA_INDEX)
+        self.right_camera = CameraCapture(config.RIGHT_CAMERA_INDEX)
+        self.inference_worker = InferenceWorker(
+            model_path=config.YOLO_MODEL_PATH,
+            imgsz=config.YOLO_IMAGE_SIZE,
+            conf=config.YOLO_CONFIDENCE,
+        )
 
         # === Connections ===
         self.left_camera.frame_ready.connect(self.on_left_frame)

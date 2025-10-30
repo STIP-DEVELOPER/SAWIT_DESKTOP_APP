@@ -5,6 +5,7 @@ from collections import deque
 from PyQt5.QtCore import QThread, pyqtSignal
 from ultralytics import YOLO
 from core.utils import draw_boxes_on_frame
+from core import config
 
 
 class InferenceWorker(QThread):
@@ -21,7 +22,10 @@ class InferenceWorker(QThread):
         self.running = False
 
         # Dua queue terpisah: kamera kiri & kanan
-        self.frame_queue = {"left": deque(maxlen=2), "right": deque(maxlen=2)}
+        self.frame_queue = {
+            "left": deque(maxlen=config.QUEUE_MAXLEN),
+            "right": deque(maxlen=config.QUEUE_MAXLEN),
+        }
 
         # Round-robin tracker
         self.last_side = "right"
