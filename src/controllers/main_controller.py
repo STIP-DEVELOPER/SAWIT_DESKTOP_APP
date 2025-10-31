@@ -20,11 +20,7 @@ class MainController:
     def _setup_components(self):
         self.left_camera = CameraCapture(config.LEFT_CAMERA_INDEX, name="left")
         self.right_camera = CameraCapture(config.RIGHT_CAMERA_INDEX, name="right")
-        self.inference_worker = InferenceWorker(
-            model_path=config.YOLO_MODEL_PATH,
-            imgsz=config.YOLO_IMAGE_SIZE,
-            conf=config.YOLO_CONFIDENCE,
-        )
+        self.inference_worker = InferenceWorker()
 
     def _connect_signals(self):
         # Camera → Frame Handler

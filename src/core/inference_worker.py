@@ -1,129 +1,169 @@
 import time
+from collections import deque
 import cv2
 import numpy as np
-from collections import deque
 from PyQt5.QtCore import QThread, pyqtSignal
 from ultralytics import YOLO
 from core.utils import draw_boxes_on_frame
 from configs import config
+from controllers.serial_controller import SerialController
 
 
 class InferenceWorker(QThread):
-    frame_processed = pyqtSignal(tuple)  # (side, frame)
+    """Worker thread responsible for YOLO inference on frames from two cameras."""
+
+    # -----------------------------
+    # SIGNALS
+    # -----------------------------
+    frame_processed = pyqtSignal(tuple)  # Emits (side, processed_frame)
     log = pyqtSignal(str)
 
-    def __init__(
-        self, model_path="models/yolov5n.pt", imgsz=320, conf=0.4, parent=None
-    ):
+    # -----------------------------
+    # INITIALIZATION
+    # -----------------------------
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.model_path = model_path
-        self.imgsz = imgsz
-        self.conf = conf
+        self.model_path = config.YOLO_MODEL_PATH
+        self.imgsz = config.YOLO_IMAGE_SIZE
+        self.conf = config.YOLO_CONFIDENCE
         self.running = False
 
-        # Dua queue terpisah: kamera kiri & kanan
+        # Separate frame queues for left and right cameras
         self.frame_queue = {
             "left": deque(maxlen=config.QUEUE_MAXLEN),
             "right": deque(maxlen=config.QUEUE_MAXLEN),
         }
 
-        # Round-robin tracker
+        # Track which camera should be processed next (for round-robin scheduling)
         self.last_side = "right"
+
         self.model = None
 
+        self.serial = SerialController(
+            port=config.SERIAL_PORT, baudrate=config.SERIAL_BAUDRATE
+        )
+
+    # -----------------------------
+    # THREAD LIFECYCLE
+    # -----------------------------
     def run(self):
+        """Main thread loop: perform YOLO inference in a round-robin manner."""
         self.running = True
         self._load_model()
 
         while self.running:
-            # Tentukan giliran kamera berikutnya
-            side = "left" if self.last_side == "right" else "right"
+            side = self._get_next_camera_side()
 
-            # Jika queue kamera ini punya frame, proses
-            if self.frame_queue[side]:
-                frame = self.frame_queue[side].popleft()
+            # Get next frame if available
+            frame = self._pop_frame(side)
+            if frame is not None:
                 self._process_frame(side, frame)
                 self.last_side = side
-            # Jika tidak ada frame di kamera ini, coba kamera satunya
-            elif self.frame_queue["left" if side == "right" else "right"]:
-                alt_side = "left" if side == "right" else "right"
-                frame = self.frame_queue[alt_side].popleft()
-                self._process_frame(alt_side, frame)
-                self.last_side = alt_side
             else:
-                # Tidak ada frame baru, istirahat sebentar
+                # Sleep briefly if no new frames are available
                 time.sleep(0.01)
 
     def stop(self):
+        """Stop the inference thread gracefully."""
         self.running = False
         self.wait()
 
+    # -----------------------------
+    # FRAME HANDLING
+    # -----------------------------
     def submit_frame(self, data):
-        """
-        Menerima frame dari main.py -> (side, frame)
-        """
+        """Receive frame from main thread: (side, frame)."""
         if not self.running:
             return
+
         side, frame = data
-        if side not in self.frame_queue:
-            return
-        self.frame_queue[side].append(frame)
+        if side in self.frame_queue:
+            self.frame_queue[side].append(frame)
+
+    def _get_next_camera_side(self):
+        """Round-robin scheduler: alternate between left and right cameras."""
+        return "left" if self.last_side == "right" else "right"
+
+    def _pop_frame(self, side):
+        """Retrieve the next available frame from queues."""
+        if self.frame_queue[side]:
+            return self.frame_queue[side].popleft()
+
+        alt_side = "left" if side == "right" else "right"
+        if self.frame_queue[alt_side]:
+            return self.frame_queue[alt_side].popleft()
+
+        return None
 
     # -----------------------------
-    # INTERNAL
+    # YOLO INFERENCE
     # -----------------------------
-
     def _load_model(self):
-        """
-        Load model YOLO dari ultralytics.
-        Auto-download jika belum ada.
-        """
+        """Load YOLO model from the given path, fallback to default if failed."""
         try:
-            self.log.emit(f"[Inference] Memuat model dari: {self.model_path}")
+            self.log.emit(f"[Inference] Loading model from: {self.model_path}")
             self.model = YOLO(self.model_path)
-            self.log.emit(f"[Inference] Model '{self.model_path}' berhasil dimuat.")
+            self.log.emit(f"[Inference] Model '{self.model_path}' loaded successfully.")
+
         except Exception as e:
-            self.log.emit(f"[Inference] Gagal memuat model lokal: {e}")
-            self.log.emit("[Inference] Mencoba model default 'yolov8n.pt' ...")
-            try:
-                self.model = YOLO("yolov8n.pt")
-                self.log.emit(
-                    "[Inference] Model 'yolov8n.pt' berhasil dimuat (fallback)."
-                )
-            except Exception as e2:
-                self.log.emit(f"[Inference] Gagal memuat model fallback: {e2}")
-                self.running = False
+            self.log.emit(f"[Inference] Failed to load local model: {e}")
+            self._load_fallback_model()
+
+    def _load_fallback_model(self):
+        """Try to load fallback YOLO model if main model fails."""
+        fallback = "yolov8n.pt"
+        try:
+            self.log.emit(f"[Inference] Trying fallback model '{fallback}'...")
+            self.model = YOLO(fallback)
+            self.log.emit(
+                f"[Inference] Fallback model '{fallback}' loaded successfully."
+            )
+        except Exception as e2:
+            self.log.emit(f"[Inference] Failed to load fallback model: {e2}")
+            self.running = False
 
     def _process_frame(self, side, frame):
-        """
-        Jalankan YOLO pada satu frame.
-        """
+        """Run YOLO inference on a single frame."""
         if self.model is None:
             return
 
         try:
-            # Jalankan YOLO inference
+            # Perform inference
             results = self.model.predict(
-                source=frame, imgsz=self.imgsz, conf=self.conf, verbose=False
+                source=frame,
+                imgsz=self.imgsz,
+                conf=self.conf,
+                verbose=False,
             )
 
-            # Ambil hasil deteksi dari frame pertama
-            res = results[0]
-            boxes = res.boxes.xyxy.cpu().numpy() if len(res.boxes) > 0 else []
-            labels = (
-                [res.names[int(c)] for c in res.boxes.cls.cpu().numpy()]
-                if len(res.boxes) > 0
-                else []
-            )
-            confs = res.boxes.conf.cpu().numpy() if len(res.boxes) > 0 else []
+            # Extract detection data
+            result = results[0]
+            boxes, labels, confs = self._extract_detections(result)
 
-            # Gambar kotak hasil deteksi
+            # Draw detection boxes
             frame_out = draw_boxes_on_frame(frame, boxes, labels, confs)
 
-            # Emit hasil ke GUI
+            # Emit result to GUI
             self.frame_processed.emit((side, frame_out))
 
-            # Log ringkas
-            self.log.emit(f"[Inference-{side}] {len(boxes)} objek terdeteksi.")
+            # Send to Arduino if any object detected
+            if len(boxes) > 0:
+                side_msg = "LEFT_DETECTED" if side == "left" else "RIGHT_DETECTED"
+                self.serial.send_message(side_msg)
+                self.log.emit(f"[SERIAL-{self.serial.read_message()}")
+
+            # Log detection info
+            self.log.emit(f"[Inference-{side}] {len(boxes)} objects detected.")
         except Exception as e:
             self.log.emit(f"[Inference-{side}] Error: {e}")
+
+    def _extract_detections(self, result):
+        """Extract bounding boxes, class labels, and confidences from YOLO result."""
+        if len(result.boxes) == 0:
+            return [], [], []
+
+        boxes = result.boxes.xyxy.cpu().numpy()
+        labels = [result.names[int(cls)] for cls in result.boxes.cls.cpu().numpy()]
+        confs = result.boxes.conf.cpu().numpy()
+
+        return boxes, labels, confs
