@@ -22,8 +22,8 @@ QUEUE_MAXLEN = 2  # Maximum queue size per camera (for frame buffering)
 # USER INTERFACE CONFIGURATION
 # ------------------------------------------------------------
 WINDOW_TITLE = "SAWIT APP"
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 640
+WINDOW_HEIGHT = 360
 
 # ------------------------------------------------------------
 # LOGGING CONFIGURATION
@@ -31,6 +31,12 @@ WINDOW_HEIGHT = 720
 LOG_PREFIX_SYSTEM = "[System]"
 LOG_PREFIX_CAMERA = "[Camera]"
 LOG_PREFIX_INFERENCE = "[Inference]"
+
+# ------------------------------------------------------------
+# SERIAL CONFIG
+# ------------------------------------------------------------
+SERIAL_PORT = "/dev/tty.usbserial-1410"  # Update this to your Arduino port
+SERIAL_BAUDRATE = 9600
 
 # ------------------------------------------------------------
 # MISC / DEVELOPMENT SETTINGS
