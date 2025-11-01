@@ -1,13 +1,14 @@
 import serial
 import threading
 import time
+import queue
 from configs import config
 
 
 class SerialController:
     """
     Handles serial communication with Arduino.
-    - Non-blocking write (via threads)
+    - Queue-based sender (no thread flood)
     - Background read loop to track Arduino status
     - Safe from flooding (rate limiting)
     """
@@ -27,13 +28,23 @@ class SerialController:
         self._last_send_time = 0
         self.min_interval = min_interval
 
-        # Connect to MCU
+        # Queue untuk menampung pesan sebelum dikirim
+        self._send_queue = queue.Queue()
+
+        # Connect ke Arduino
         self._connect()
 
-        # Start background reader thread
+        # Thread pembaca serial (mendengar status dari Arduino)
         self._reader_thread = threading.Thread(target=self._read_loop, daemon=True)
         self._reader_thread.start()
 
+        # Thread pengirim serial (ambil dari queue dan kirim satu per satu)
+        self._sender_thread = threading.Thread(target=self._send_worker, daemon=True)
+        self._sender_thread.start()
+
+    # --------------------------------------------------
+    # CONNECTION
+    # --------------------------------------------------
     def _connect(self):
         """Try to connect to the Arduino via serial port."""
         try:
@@ -43,20 +54,51 @@ class SerialController:
             print(f"[Serial] Connection failed: {e}")
             self.ser = None
 
-    def _send_thread(self, message: str):
-        """Worker thread to send message safely to Arduino."""
-        if not self.ser or not self.ser.is_open:
-            print("[Serial] Serial port not open. Cannot send message.")
+    # --------------------------------------------------
+    # SENDER
+    # --------------------------------------------------
+    def send_message(self, message: str):
+        """
+        Kirim pesan ke Arduino melalui queue.
+        Pesan akan dikirim oleh _send_worker agar tidak membuat banyak thread.
+        """
+        now = time.time()
+
+        if now - self._last_send_time < self.min_interval:
+            print("[Serial] Too soon since last send — throttling.")
             return
 
-        try:
-            with self.lock:
-                self.ser.write(f"{message}\n".encode())
-                self.ser.flush()
-            print(f"[Serial -> Arduino] Sent: {message}")
-        except Exception as e:
-            print(f"[Serial] Failed to send message: {e}")
+        if self.status != "READY":
+            print(f"[Serial] Arduino is {self.status}. Command skipped.")
+            return
 
+        self._last_send_time = now
+        self._send_queue.put(message)
+
+    def _send_worker(self):
+        """Worker thread untuk mengirim pesan dari queue ke Arduino."""
+        while self._running:
+            try:
+                message = self._send_queue.get(timeout=0.1)
+                if not self.ser or not self.ser.is_open:
+                    continue
+
+                with self.lock:
+                    self.ser.write(f"{message}\n".encode())
+                    self.ser.flush()
+
+                print(f"[Serial -> Arduino] Sent: {message}")
+                self._send_queue.task_done()
+
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"[Serial] Send error: {e}")
+                time.sleep(0.2)
+
+    # --------------------------------------------------
+    # READER
+    # --------------------------------------------------
     def _read_loop(self):
         """
         Continuously read messages from Arduino.
@@ -83,24 +125,9 @@ class SerialController:
                 print(f"[Serial] Read error: {e}")
                 time.sleep(0.5)
 
-    def send_message(self, message: str):
-        """
-        Send a message to Arduino (thread-safe and rate-limited).
-        Skips sending if Arduino is busy or message sent too recently.
-        """
-        now = time.time()
-
-        if now - self._last_send_time < self.min_interval:
-            print("[Serial] Too soon since last send — throttling.")
-            return
-
-        if self.status != "READY":
-            print(f"[Serial] Arduino is {self.status}. Command skipped.")
-            return
-
-        self._last_send_time = now
-        threading.Thread(target=self._send_thread, args=(message,), daemon=True).start()
-
+    # --------------------------------------------------
+    # CLEANUP
+    # --------------------------------------------------
     def close(self):
         """Stop threads and close the serial connection."""
         self._running = False

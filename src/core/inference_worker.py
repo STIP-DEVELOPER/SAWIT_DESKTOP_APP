@@ -10,160 +10,130 @@ from controllers.serial_controller import SerialController
 
 
 class InferenceWorker(QThread):
-    """Worker thread responsible for YOLO inference on frames from two cameras."""
+    """
+    Handles YOLO object detection and serial communication to Arduino.
+    Includes frame queueing, frame skipping, and object position logic.
+    """
 
-    # -----------------------------
-    # SIGNALS
-    # -----------------------------
-    frame_processed = pyqtSignal(tuple)  # Emits (side, processed_frame)
+    frame_processed = pyqtSignal(object)
     log = pyqtSignal(str)
 
-    # -----------------------------
-    # INITIALIZATION
-    # -----------------------------
     def __init__(self, parent=None):
         super().__init__(parent)
         self.model_path = config.YOLO_MODEL_PATH
         self.imgsz = config.YOLO_IMAGE_SIZE
         self.conf = config.YOLO_CONFIDENCE
         self.running = False
-
-        # Separate frame queues for left and right cameras
-        self.frame_queue = {
-            "left": deque(maxlen=config.QUEUE_MAXLEN),
-            "right": deque(maxlen=config.QUEUE_MAXLEN),
-        }
-
-        # Track which camera should be processed next (for round-robin scheduling)
-        self.last_side = "right"
-
+        self.frame_queue = deque(maxlen=config.QUEUE_MAXLEN)
         self.model = None
+        self._frame_counter = 0
 
+        # Initialize Serial Controller
         self.serial = SerialController(
             port=config.SERIAL_PORT, baudrate=config.SERIAL_BAUDRATE
         )
 
-    # -----------------------------
-    # THREAD LIFECYCLE
-    # -----------------------------
     def run(self):
-        """Main thread loop: perform YOLO inference in a round-robin manner."""
+        """Main thread loop for inference processing."""
         self.running = True
         self._load_model()
 
         while self.running:
-            side = self._get_next_camera_side()
-
-            # Get next frame if available
-            frame = self._pop_frame(side)
-            if frame is not None:
-                self._process_frame(side, frame)
-                self.last_side = side
-            else:
-                # Sleep briefly if no new frames are available
+            if not self.frame_queue:
                 time.sleep(0.01)
+                continue
+
+            frame = self.frame_queue.popleft()
+            self._process_frame(frame)
 
     def stop(self):
-        """Stop the inference thread gracefully."""
+        """Stops inference thread and closes resources."""
         self.running = False
         self.wait()
 
-    # -----------------------------
-    # FRAME HANDLING
-    # -----------------------------
-    def submit_frame(self, data):
-        """Receive frame from main thread: (side, frame)."""
-        if not self.running:
-            return
+    def submit_frame(self, frame):
+        """Adds a new frame to the processing queue."""
+        if self.running:
+            self.frame_queue.append(frame)
 
-        side, frame = data
-        if side in self.frame_queue:
-            self.frame_queue[side].append(frame)
-
-    def _get_next_camera_side(self):
-        """Round-robin scheduler: alternate between left and right cameras."""
-        return "left" if self.last_side == "right" else "right"
-
-    def _pop_frame(self, side):
-        """Retrieve the next available frame from queues."""
-        if self.frame_queue[side]:
-            return self.frame_queue[side].popleft()
-
-        alt_side = "left" if side == "right" else "right"
-        if self.frame_queue[alt_side]:
-            return self.frame_queue[alt_side].popleft()
-
-        return None
-
-    # -----------------------------
-    # YOLO INFERENCE
-    # -----------------------------
     def _load_model(self):
-        """Load YOLO model from the given path, fallback to default if failed."""
+        """Loads YOLO model for object detection."""
         try:
-            self.log.emit(f"[Inference] Loading model from: {self.model_path}")
+            self.log.emit(f"[Inference] Loading model: {self.model_path}")
             self.model = YOLO(self.model_path)
-            self.log.emit(f"[Inference] Model '{self.model_path}' loaded successfully.")
-
+            self.log.emit("[Inference] Model loaded successfully.")
         except Exception as e:
-            self.log.emit(f"[Inference] Failed to load local model: {e}")
-            self._load_fallback_model()
+            self.log.emit(f"[Inference] Failed to load model: {e}")
+            # Fallback to default lightweight YOLO model
+            self.model = YOLO("yolov8n.pt")
 
-    def _load_fallback_model(self):
-        """Try to load fallback YOLO model if main model fails."""
-        fallback = "yolov8n.pt"
-        try:
-            self.log.emit(f"[Inference] Trying fallback model '{fallback}'...")
-            self.model = YOLO(fallback)
-            self.log.emit(
-                f"[Inference] Fallback model '{fallback}' loaded successfully."
-            )
-        except Exception as e2:
-            self.log.emit(f"[Inference] Failed to load fallback model: {e2}")
-            self.running = False
-
-    def _process_frame(self, side, frame):
-        """Run YOLO inference on a single frame."""
+    def _process_frame(self, frame):
+        """Processes a single video frame for object detection."""
         if self.model is None:
             return
 
         try:
-            # Perform inference
+            # Frame skipping → only detect every 3 frames
+            self._frame_counter += 1
+            if self._frame_counter % config.YOLO_FRAME_SKIP != 0:
+                return
+
             results = self.model.predict(
-                source=frame,
-                imgsz=self.imgsz,
-                conf=self.conf,
-                verbose=False,
+                source=frame, imgsz=self.imgsz, conf=self.conf, verbose=False
             )
 
-            # Extract detection data
             result = results[0]
             boxes, labels, confs = self._extract_detections(result)
-
-            # Draw detection boxes
             frame_out = draw_boxes_on_frame(frame, boxes, labels, confs)
 
-            # Emit result to GUI
-            self.frame_processed.emit((side, frame_out))
-
-            # Send to Arduino if any object detected
             if len(boxes) > 0:
-                side_msg = "LEFT_DETECTED" if side == "left" else "RIGHT_DETECTED"
-                self.serial.send_message(side_msg)
-                self.log.emit(f"[SERIAL-{self.serial.read_message()}")
+                frame_width = frame.shape[1]
 
-            # Log detection info
-            self.log.emit(f"[Inference-{side}] {len(boxes)} objects detected.")
+                for box in boxes:
+                    x1, y1, x2, y2 = map(int, box)
+                    x_center = (x1 + x2) / 2
+
+                    position = self._get_object_position(x_center, frame_width)
+
+                    # Decide message based on position
+                    if position == "LEFT":
+                        message = "LEFT_DETECTED"
+                    elif position == "CENTER":
+                        message = "CENTER_DETECTED"
+                    else:
+                        message = "RIGHT_DETECTED"
+
+                    # Send message to Arduino
+                    self.serial.send_message(message)
+                    self.log.emit(f"[Detection] {message}")
+
+            # Emit processed frame to UI
+            self.frame_processed.emit(frame_out)
+
         except Exception as e:
-            self.log.emit(f"[Inference-{side}] Error: {e}")
+            self.log.emit(f"[Inference] Error: {e}")
+
+    def _get_object_position(self, x_center, frame_width, tolerance=0.2):
+        """
+        Determines object position (LEFT, CENTER, RIGHT) based on bounding box center.
+        tolerance defines how wide the center zone is (e.g., 0.2 = 20% of frame width).
+        """
+        left_threshold = frame_width * (0.5 - tolerance)
+        right_threshold = frame_width * (0.5 + tolerance)
+
+        if x_center < left_threshold:
+            return "LEFT"
+        elif x_center > right_threshold:
+            return "RIGHT"
+        else:
+            return "CENTER"
 
     def _extract_detections(self, result):
-        """Extract bounding boxes, class labels, and confidences from YOLO result."""
+        """Extracts bounding boxes, labels, and confidence scores from YOLO output."""
         if len(result.boxes) == 0:
             return [], [], []
 
         boxes = result.boxes.xyxy.cpu().numpy()
         labels = [result.names[int(cls)] for cls in result.boxes.cls.cpu().numpy()]
         confs = result.boxes.conf.cpu().numpy()
-
         return boxes, labels, confs
