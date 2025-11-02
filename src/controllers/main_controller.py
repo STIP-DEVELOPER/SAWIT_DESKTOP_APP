@@ -31,6 +31,18 @@ class MainController:
 
     def start(self):
         self._append_log("[System] Starting camera...")
+        selected_model = config.YOLO_MODEL_PATH
+
+        if "Small-Tree" in selected_model:
+            model_path = config.YOLO_MODEL_SMALL
+        elif "Medium-Tree" in selected_model:
+            model_path = config.YOLO_MODEL_MEDIUM
+        else:
+            model_path = config.YOLO_MODEL_LARGE
+
+        # Set model path before starting inference
+        self.inference_worker.model_path = model_path
+        self._append_log(f"[Model] Selected model: {selected_model} ({model_path})")
         self.inference_worker.start()
         self.camera.start()
 

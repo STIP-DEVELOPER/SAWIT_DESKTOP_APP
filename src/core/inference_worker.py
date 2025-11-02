@@ -56,6 +56,16 @@ class InferenceWorker(QThread):
         if self.running:
             self.frame_queue.append(frame)
 
+    def load_new_model(self, new_model_path):
+        """Reload YOLO model without stopping the thread."""
+        try:
+            self.log.emit(f"[Inference] Loading new model: {new_model_path}")
+            self.model = YOLO(new_model_path)
+            self.model_path = new_model_path
+            self.log.emit(f"[Inference] Model switched successfully → {new_model_path}")
+        except Exception as e:
+            self.log.emit(f"[Inference] Failed to switch model: {e}")
+
     def _load_model(self):
         """Loads YOLO model for object detection."""
         try:

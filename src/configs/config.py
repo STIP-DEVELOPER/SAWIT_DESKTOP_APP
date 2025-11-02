@@ -6,6 +6,12 @@
 # YOLO MODEL CONFIGURATION
 # ------------------------------------------------------------
 YOLO_MODEL_PATH = "models/yolov5n.pt"  # Path to the YOLO model file
+
+YOLO_MODEL_SMALL = "models/yolov5n.pt"
+YOLO_MODEL_MEDIUM = "models/yolov5n.pt"
+YOLO_MODEL_LARGE = "models/yolov5n.pt"
+
+
 YOLO_IMAGE_SIZE = 320  # Input image size for YOLO inference
 YOLO_CONFIDENCE = 0.4  # Minimum confidence threshold for detection
 YOLO_FRAME_SKIP = 5  # TOTAL_FRAME / YOLO_FRAME_SKIP = reduced FPS for inference
