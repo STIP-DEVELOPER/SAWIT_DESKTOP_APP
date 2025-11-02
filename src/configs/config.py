@@ -1,6 +1,8 @@
 import os
 import json
 
+from core.logger import add_log
+
 # ------------------------------------------------------------
 # YOLO MODEL CONFIGURATION
 # ------------------------------------------------------------
@@ -84,7 +86,9 @@ if os.path.exists(SETTINGS_FILE):
             print(f"[CONFIG] Serial Port: {SERIAL_PORT}")
 
     except Exception as e:
-        print(f"[CONFIG] Failed to load settings.json: {e}")
+        add_log("ERROR", "Config", f"Failed to load settings.json: {e}")
 else:
     if DEBUG_MODE:
-        print("[CONFIG] settings.json not found, using default configuration.")
+        add_log(
+            "WARNING", "Config", "settings.json not found, using default configuration."
+        )
