@@ -97,9 +97,6 @@ class SettingsPage(QWidget):
             )
             field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # ======================
-        # Tambahkan ke grid dalam dua kolom
-        # ======================
         grid.addWidget(QLabel("YOLO Model:"), 0, 0, alignment=Qt.AlignRight)
         grid.addWidget(self.yolo_model, 0, 1)
 
@@ -121,15 +118,11 @@ class SettingsPage(QWidget):
         grid.addWidget(QLabel("Baudrate:"), 3, 0, alignment=Qt.AlignRight)
         grid.addWidget(self.serial_baud, 3, 1)
 
-        # Label style
         for i in range(grid.count()):
             item = grid.itemAt(i).widget()
             if isinstance(item, QLabel):
                 item.setStyleSheet(label_style)
 
-        # ======================
-        # SAVE BUTTON
-        # ======================
         self.save_button = QPushButton(" Save")
         self.save_button.setIcon(
             QIcon(os.path.join(os.getcwd(), "assets", "icons", "save.png"))
@@ -139,7 +132,6 @@ class SettingsPage(QWidget):
         self.save_button.setFixedHeight(45)
         self.save_button.clicked.connect(self._save_settings)
 
-        # Layout tombol kanan
         button_layout = QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(self.save_button)

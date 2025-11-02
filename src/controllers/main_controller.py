@@ -26,9 +26,7 @@ class MainController:
         self.ui.start_button.clicked.connect(self.start)
         self.ui.stop_button.clicked.connect(self.stop)
         self.ui.exit_button.clicked.connect(self._exit_app)
-        self.ui.toggle_camera_button.clicked.connect(
-            self._toggle_camera_view
-        )  # <--- add this
+        self.ui.toggle_camera_button.clicked.connect(self._toggle_camera_view)
 
     def start(self):
         self._append_log("[System] Starting camera...")

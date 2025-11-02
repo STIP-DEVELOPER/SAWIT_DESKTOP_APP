@@ -25,16 +25,10 @@ class LogsPage(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
 
-        # ======================
-        # Label judul
-        # ======================
         title = QLabel("📜 System Logs")
         title.setStyleSheet("color: #ccc; font-size: 16px; font-weight: bold;")
         layout.addWidget(title)
 
-        # ======================
-        # Area teks log
-        # ======================
         self.logs_text = QTextEdit()
         self.logs_text.setReadOnly(True)
         self.logs_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)

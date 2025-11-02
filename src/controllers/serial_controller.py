@@ -29,10 +29,10 @@ class SerialController:
         self._last_send_time = 0
         self.min_interval = min_interval
 
-        # Queue untuk menampung pesan sebelum dikirim
+        # Queue for outgoing messages
         self._send_queue = queue.Queue()
 
-        # Connect ke Arduino
+        # Connect to Arduino
         self._connect()
 
         # Thread pembaca serial (mendengar status dari Arduino)
