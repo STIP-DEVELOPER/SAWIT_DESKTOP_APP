@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import (
     QComboBox,
 )
 
+from core.logger import add_log
+
 
 class SettingsPage(QWidget):
     def __init__(self):
@@ -169,7 +171,8 @@ class SettingsPage(QWidget):
                 self.serial_port.setText(settings.get("SERIAL_PORT", "/dev/ttyUSB0"))
                 self.serial_baud.setText(str(settings.get("SERIAL_BAUDRATE", 9600)))
         except Exception as e:
-            print(f"[WARN] Failed to load settings: {e}")
+            QMessageBox.critical(self, "Error", f"❌ Failed to load settings: {e}")
+            add_log("ERROR", "SettingsPage", f"Failed to load settings: {e}")
 
     def _save_settings(self):
         selected_model = self.yolo_model.currentText()
@@ -190,13 +193,15 @@ class SettingsPage(QWidget):
             with open(self.settings_file, "w") as f:
                 json.dump(data, f, indent=4)
             QMessageBox.information(self, "Success", "✅ Settings saved successfully!")
+            add_log("INFO", "SettingsPage", "Settings saved successfully")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"❌ Failed to save settings: {e}")
+            add_log("ERROR", "SettingsPage", f"Failed to save settings: {e}")
 
     def _button_style(self):
         return """
             QPushButton {
-                background-color: #1976d2;
+                background-color: #222;
                 color: white;
                 border-radius: 8px;
                 padding: 8px 20px;

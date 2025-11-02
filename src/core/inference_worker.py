@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 from ultralytics import YOLO
+from core.logger import add_log
 from core.utils import draw_boxes_on_frame
 from configs import config
 from controllers.serial_controller import SerialController
@@ -65,6 +66,7 @@ class InferenceWorker(QThread):
             self.log.emit(f"[Inference] Model switched successfully → {new_model_path}")
         except Exception as e:
             self.log.emit(f"[Inference] Failed to switch model: {e}")
+            add_log("ERROR", "InferenceWorker", f"Failed to switch model: {e}")
 
     def _load_model(self):
         """Loads YOLO model for object detection."""
@@ -74,6 +76,7 @@ class InferenceWorker(QThread):
             self.log.emit("[Inference] Model loaded successfully.")
         except Exception as e:
             self.log.emit(f"[Inference] Failed to load model: {e}")
+            add_log("ERROR", "InferenceWorker", f"Failed to load model: {e}")
             # Fallback to default lightweight YOLO model
             self.model = YOLO("yolov8n.pt")
 
@@ -122,6 +125,7 @@ class InferenceWorker(QThread):
 
         except Exception as e:
             self.log.emit(f"[Inference] Error: {e}")
+            add_log("ERROR", "InferenceWorker", f"Inference error: {e}")
 
     def _get_object_position(self, x_center, frame_width, tolerance=0.2):
         """

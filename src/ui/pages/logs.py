@@ -1,5 +1,4 @@
 import os
-import json
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
@@ -12,14 +11,14 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QSizePolicy,
 )
+from core.logger import get_logs
 
 
 class LogsPage(QWidget):
     def __init__(self):
         super().__init__()
-        self.log_file = "logs.json"
+        self.log_file = os.path.join(os.getcwd(), "logs.json")
         self._build_ui()
-        self.load_logs()
 
     def _build_ui(self):
         layout = QVBoxLayout()
@@ -54,9 +53,6 @@ class LogsPage(QWidget):
         )
         layout.addWidget(self.logs_text)
 
-        # ======================
-        # Tombol Reload & Export (kanan bawah)
-        # ======================
         self.reload_button = QPushButton(" Reload")
         self.reload_button.setIcon(QIcon(os.path.join("assets", "icons", "reload.png")))
         self.reload_button.setIconSize(QSize(24, 24))
@@ -70,9 +66,8 @@ class LogsPage(QWidget):
         self.reload_button.clicked.connect(self.load_logs)
         self.export_button.clicked.connect(self.export_logs)
 
-        # Layout horizontal untuk tombol
         button_layout = QHBoxLayout()
-        button_layout.addStretch()  # dorong tombol ke kanan
+        button_layout.addStretch()
         button_layout.addWidget(self.reload_button)
         button_layout.addWidget(self.export_button)
         button_layout.setSpacing(10)
@@ -83,15 +78,18 @@ class LogsPage(QWidget):
 
     def load_logs(self):
         self.logs_text.clear()
-        if os.path.exists(self.log_file):
-            try:
-                with open(self.log_file, "r") as f:
-                    logs = json.load(f)
-                    self.logs_text.setPlainText(json.dumps(logs, indent=4))
-            except Exception as e:
-                self.logs_text.setPlainText(f"❌ Error reading log: {e}")
-        else:
-            self.logs_text.setPlainText("⚠️ No log file found.")
+        logs = get_logs()
+
+        if not logs:
+            self.logs_text.setPlainText("⚠️ No log data found.")
+            return
+
+        formatted_logs = "\n".join(
+            f"[{log['timestamp']}] [{log['level']}] [{log['source']}] {log['message']}"
+            for log in logs
+        )
+
+        self.logs_text.setPlainText(formatted_logs)
 
     def export_logs(self):
         if not os.path.exists(self.log_file):
@@ -112,7 +110,7 @@ class LogsPage(QWidget):
     def _button_style(self):
         return """
             QPushButton {
-                background-color: #1976d2;
+                background-color: #222;
                 color: white;
                 border-radius: 8px;
                 padding: 8px 18px;
@@ -122,3 +120,11 @@ class LogsPage(QWidget):
             QPushButton:hover { background-color: #2196f3; }
             QPushButton:pressed { background-color: #0d47a1; }
         """
+
+    # ======================
+    # OVERRIDE SHOW EVENT
+    # ======================
+    def showEvent(self, event):
+        """Override showEvent to load logs when the page is shown."""
+        super().showEvent(event)
+        self.load_logs()

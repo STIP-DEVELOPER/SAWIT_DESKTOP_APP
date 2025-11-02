@@ -11,12 +11,14 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QSize
 
+from core.logger import add_log
+
 
 class HomePage(QWidget):
     def __init__(self):
         super().__init__()
         self.show_camera = True
-        self.is_running = False  # status start/stop
+        self.is_running = False
         self._build_ui()
 
     def _icon(self, name: str) -> QIcon:
@@ -74,7 +76,7 @@ class HomePage(QWidget):
         self.stop_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.stop_button.setLayoutDirection(Qt.LeftToRight)
         self.stop_button.clicked.connect(self.toggle_start_stop)
-        self.stop_button.hide()  # disembunyikan di awal
+        self.stop_button.hide()
 
         self.toggle_camera_button = QToolButton()
         self.toggle_camera_button.setText("Camera")
@@ -83,7 +85,6 @@ class HomePage(QWidget):
         self.toggle_camera_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.toggle_camera_button.setLayoutDirection(Qt.LeftToRight)
 
-        # Styling
         for btn in [
             self.start_button,
             self.stop_button,
@@ -111,16 +112,18 @@ class HomePage(QWidget):
         self.setLayout(layout)
 
     def toggle_start_stop(self):
-        """Ganti tombol Start/Stop"""
+        """Toggle inference start/stop state."""
         self.is_running = not self.is_running
         if self.is_running:
             self.start_button.hide()
             self.stop_button.show()
-            self.log_box.append("▶️ Inference started...")
+            self.log_box.append("Inference started...")
+            add_log("INFO", "System", "Inference started")
         else:
             self.stop_button.hide()
             self.start_button.show()
             self.log_box.append("⏹ Inference stopped.")
+            add_log("INFO", "System", "Inference stopped")
 
     def _button_style(self):
         return """

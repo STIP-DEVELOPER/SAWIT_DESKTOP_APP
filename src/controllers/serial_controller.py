@@ -3,6 +3,7 @@ import threading
 import time
 import queue
 from configs import config
+from core.logger import add_log
 
 
 class SerialController:
@@ -49,9 +50,15 @@ class SerialController:
         """Try to connect to the Arduino via serial port."""
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
-            print(f"[Serial] Connected to {self.port} at {self.baudrate} baud.")
+            add_log(
+                "INFO",
+                "SerialController",
+                f"Connected to {self.port} at {self.baudrate} baud.",
+            )
         except Exception as e:
-            print(f"[Serial] Connection failed: {e}")
+            add_log(
+                "ERROR", "SerialController", f"Failed to connect to {self.port}: {e}"
+            )
             self.ser = None
 
     # --------------------------------------------------
@@ -94,6 +101,7 @@ class SerialController:
                 continue
             except Exception as e:
                 print(f"[Serial] Send error: {e}")
+                add_log("ERROR", "SerialController", f"Send error: {e}")
                 time.sleep(0.2)
 
     # --------------------------------------------------
@@ -123,6 +131,7 @@ class SerialController:
 
             except Exception as e:
                 print(f"[Serial] Read error: {e}")
+                add_log("ERROR", "SerialController", f"Read error: {e}")
                 time.sleep(0.5)
 
     # --------------------------------------------------
@@ -133,4 +142,4 @@ class SerialController:
         self._running = False
         if self.ser and self.ser.is_open:
             self.ser.close()
-            print("[Serial] Connection closed.")
+            add_log("INFO", "SerialController", "Serial connection closed.")

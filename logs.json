@@ -1,26 +1,128 @@
 [
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:31", "event": "Camera started" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" },
-    { "time": "2025-11-02 14:32", "event": "Detection: Palm Tree (Medium)" }
+    {
+        "timestamp": "2025-11-01T21:34:22",
+        "level": "INFO",
+        "source": "Camera",
+        "message": "Camera started successfully."
+    },
+    {
+        "timestamp": "2025-11-01T21:35:05",
+        "level": "WARNING",
+        "source": "YOLO",
+        "message": "Low confidence detected."
+    },
+    {
+        "timestamp": "2025-11-02T22:29:34",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference started"
+    },
+    {
+        "timestamp": "2025-11-02T22:29:53",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference stopped"
+    },
+    {
+        "timestamp": "2025-11-02T22:36:48",
+        "level": "ERROR",
+        "source": "SerialController",
+        "message": "Failed to connect to /dev/tty.usbserial-1410: [Errno 2] could not open port /dev/tty.usbserial-1410: [Errno 2] No such file or directory: '/dev/tty.usbserial-1410'"
+    },
+    {
+        "timestamp": "2025-11-02T22:36:52",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference started"
+    },
+    {
+        "timestamp": "2025-11-02T22:37:19",
+        "level": "INFO",
+        "source": "SettingsPage",
+        "message": "Settings saved successfully"
+    },
+    {
+        "timestamp": "2025-11-02T22:37:43",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference stopped"
+    },
+    {
+        "timestamp": "2025-11-02T22:37:43",
+        "level": "INFO",
+        "source": "Camera-center",
+        "message": "Kamera dihentikan."
+    },
+    {
+        "timestamp": "2025-11-02T22:39:36",
+        "level": "ERROR",
+        "source": "SerialController",
+        "message": "Failed to connect to /dev/tty.usbserial-1410: [Errno 2] could not open port /dev/tty.usbserial-1410: [Errno 2] No such file or directory: '/dev/tty.usbserial-1410'"
+    },
+    {
+        "timestamp": "2025-11-02T22:39:53",
+        "level": "INFO",
+        "source": "SettingsPage",
+        "message": "Settings saved successfully"
+    },
+    {
+        "timestamp": "2025-11-02T22:40:28",
+        "level": "ERROR",
+        "source": "SerialController",
+        "message": "Failed to connect to /dev/tty.usbserial-1410: [Errno 2] could not open port /dev/tty.usbserial-1410: [Errno 2] No such file or directory: '/dev/tty.usbserial-1410'"
+    },
+    {
+        "timestamp": "2025-11-02T22:41:24",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference started"
+    },
+    {
+        "timestamp": "2025-11-02T22:42:08",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference stopped"
+    },
+    {
+        "timestamp": "2025-11-02T22:42:09",
+        "level": "INFO",
+        "source": "Camera-center",
+        "message": "Kamera dihentikan."
+    },
+    {
+        "timestamp": "2025-11-02T22:46:48",
+        "level": "ERROR",
+        "source": "SerialController",
+        "message": "Failed to connect to /dev/tty.usbserial-1410: [Errno 2] could not open port /dev/tty.usbserial-1410: [Errno 2] No such file or directory: '/dev/tty.usbserial-1410'"
+    },
+    {
+        "timestamp": "2025-11-02T22:46:52",
+        "level": "INFO",
+        "source": "System",
+        "message": "Inference started"
+    },
+    {
+        "timestamp": "2025-11-02T22:46:52",
+        "level": "INFO",
+        "source": "System",
+        "message": "[Model] Selected model: /Users/macbookpro/Documents/DEVELOPER/SAWIT/DESKTOP/models/large-tree.pt (models/yolov5n.pt)"
+    },
+    {
+        "timestamp": "2025-11-02T22:49:14",
+        "level": "INFO",
+        "source": "Camera-center",
+        "message": "Kamera dihentikan."
+    },
+    {
+        "timestamp": "2025-11-02T22:49:31",
+        "level": "ERROR",
+        "source": "SerialController",
+        "message": "Failed to connect to /dev/tty.usbserial-1410: [Errno 2] could not open port /dev/tty.usbserial-1410: [Errno 2] No such file or directory: '/dev/tty.usbserial-1410'"
+    },
+    {
+        "timestamp": "2025-11-02T22:50:02",
+        "level": "INFO",
+        "source": "SettingsPage",
+        "message": "Settings saved successfully"
+    }
 ]

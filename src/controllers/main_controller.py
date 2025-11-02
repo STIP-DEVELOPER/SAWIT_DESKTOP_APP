@@ -1,5 +1,6 @@
 from core.camera_capture import CameraCapture
 from core.inference_worker import InferenceWorker
+from core.logger import add_log
 from core.utils import convert_frame_to_qpixmap
 from configs import config
 
@@ -45,6 +46,9 @@ class MainController:
         self._append_log(f"[Model] Selected model: {selected_model} ({model_path})")
         self.inference_worker.start()
         self.camera.start()
+        add_log(
+            "INFO", "System", f"[Model] Selected model: {selected_model} ({model_path})"
+        )
 
     def stop(self):
         self._append_log("[System] Stopping camera...")
