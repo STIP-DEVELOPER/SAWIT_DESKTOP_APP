@@ -1,13 +1,15 @@
+import os
 from PyQt5.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QLabel,
     QTextEdit,
-    QPushButton,
     QHBoxLayout,
     QSizePolicy,
+    QToolButton,
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QSize
 
 
 class HomePage(QWidget):
@@ -16,10 +18,16 @@ class HomePage(QWidget):
         self.show_camera = True
         self._build_ui()
 
+    def _icon(self, name: str) -> QIcon:
+        icon_path = os.path.join(os.getcwd(), "assets", "icons", name)
+        return QIcon(icon_path) if os.path.exists(icon_path) else QIcon()
+
     def _build_ui(self):
         layout = QVBoxLayout()
 
-        # Camera preview area
+        # ======================
+        # CAMERA VIEW
+        # ======================
         self.camera_label = QLabel("Camera View")
         self.camera_label.setAlignment(Qt.AlignCenter)
         self.camera_label.setMinimumSize(640, 480)
@@ -33,7 +41,9 @@ class HomePage(QWidget):
         """
         )
 
-        # Log box
+        # ======================
+        # LOG VIEW
+        # ======================
         self.log_box = QTextEdit()
         self.log_box.setReadOnly(True)
         self.log_box.setStyleSheet(
@@ -45,26 +55,50 @@ class HomePage(QWidget):
         """
         )
 
-        # Buttons
-        self.start_button = QPushButton("▶ Start")
-        self.stop_button = QPushButton("⏹ Stop")
-        self.toggle_camera_button = QPushButton("👁 Show/Hide Camera")
-        self.exit_button = QPushButton("⏻ Exit")
+        # ======================
+        # CONTROL BUTTONS
+        # ======================
+        self.start_button = QToolButton()
+        self.start_button.setText("Start")
+        self.start_button.setIcon(self._icon("start.png"))
+        self.start_button.setIconSize(QSize(28, 28))
+        self.start_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.start_button.setLayoutDirection(Qt.LeftToRight)
 
+        self.stop_button = QToolButton()
+        self.stop_button.setText("Stop")
+        self.stop_button.setIcon(self._icon("stop.png"))
+        self.stop_button.setIconSize(QSize(28, 28))
+        self.stop_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.stop_button.setLayoutDirection(Qt.LeftToRight)
+
+        self.toggle_camera_button = QToolButton()
+        self.toggle_camera_button.setText("Camera")
+        self.toggle_camera_button.setIcon(self._icon("camera.png"))
+        self.toggle_camera_button.setIconSize(QSize(28, 28))
+        self.toggle_camera_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.toggle_camera_button.setLayoutDirection(Qt.LeftToRight)
+
+        # Styling
         for btn in [
             self.start_button,
             self.stop_button,
             self.toggle_camera_button,
-            self.exit_button,
         ]:
             btn.setStyleSheet(self._button_style())
+            btn.setFixedHeight(40)
 
+        # Control layout
         control_layout = QHBoxLayout()
+        control_layout.setSpacing(20)
+        control_layout.setAlignment(Qt.AlignCenter)
         control_layout.addWidget(self.start_button)
         control_layout.addWidget(self.stop_button)
         control_layout.addWidget(self.toggle_camera_button)
-        control_layout.addWidget(self.exit_button)
 
+        # ======================
+        # LAYOUT STRUCTURE
+        # ======================
         layout.addWidget(self.camera_label)
         layout.addWidget(self.log_box)
         layout.addLayout(control_layout)
@@ -75,13 +109,13 @@ class HomePage(QWidget):
 
     def _button_style(self):
         return """
-            QPushButton {
-                background-color: #333;
-                color: white;
+            QToolButton {
+                background-color: #222;
                 border-radius: 6px;
-                padding: 10px 20px;
+                color: white;
                 font-size: 14px;
+                padding: 6px 14px;
             }
-            QPushButton:hover { background-color: #555; }
-            QPushButton:pressed { background-color: #222; }
+            QToolButton:hover { background-color: #444; }
+            QToolButton:pressed { background-color: #000; }
         """

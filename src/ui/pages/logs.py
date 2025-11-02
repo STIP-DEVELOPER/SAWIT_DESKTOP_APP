@@ -11,9 +11,9 @@ from PyQt5.QtWidgets import (
 
 
 class LogsPage(QWidget):
-    def __init__(self, log_file):
+    def __init__(self):
         super().__init__()
-        self.log_file = log_file
+        self.log_file = "logs.json"
         self._build_ui()
 
     def _build_ui(self):
