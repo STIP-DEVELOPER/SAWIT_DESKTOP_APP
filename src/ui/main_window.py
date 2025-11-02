@@ -24,6 +24,9 @@ class MainWindow(QWidget):
 
         self._build_ui()
 
+        # === tampilkan fullscreen saat pertama kali dibuka ===
+        self.showFullScreen()
+
     # -------------------------
     # ICON HELPER
     # -------------------------
@@ -105,15 +108,13 @@ class MainWindow(QWidget):
 
         # ===== MAIN LAYOUT =====
         main_layout = QVBoxLayout()
-        main_layout.addLayout(menu_layout)  # menu bar di atas
+        main_layout.addLayout(menu_layout)
         main_layout.addWidget(self.main_stack)
         main_layout.setStretch(1, 1)
         self.setLayout(main_layout)
 
-        # default: tampilkan Home
         self._switch_page("home")
 
-        # expose tombol penting agar bisa diakses controller
         self.start_button = self.page_home.start_button
         self.stop_button = self.page_home.stop_button
         self.toggle_camera_button = self.page_home.toggle_camera_button

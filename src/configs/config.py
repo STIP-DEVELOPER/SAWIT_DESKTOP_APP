@@ -1,6 +1,5 @@
-# ============================================================
-# MAIN CONFIGURATION
-# ============================================================
+import os
+import json
 
 # ------------------------------------------------------------
 # YOLO MODEL CONFIGURATION
@@ -52,3 +51,40 @@ SERIAL_BAUDRATE = 9600
 # MISC / DEVELOPMENT SETTINGS
 # ------------------------------------------------------------
 DEBUG_MODE = True  # Enable verbose logging or additional debug output
+
+
+# ============================================================
+# LOAD SETTINGS FROM JSON
+# ============================================================
+
+SETTINGS_FILE = os.path.join(os.getcwd(), "settings.json")
+
+if os.path.exists(SETTINGS_FILE):
+    try:
+        with open(SETTINGS_FILE, "r") as f:
+            settings = json.load(f)
+
+        # Update konfigurasi dari file JSON
+        YOLO_MODEL = settings.get("YOLO_MODEL", None)
+        YOLO_MODEL_PATH = settings.get("MODEL_PATH", YOLO_MODEL_PATH)
+        CAMERA_INDEX = settings.get("CAMERA_INDEX", CAMERA_INDEX)
+        YOLO_IMAGE_SIZE = settings.get("YOLO_IMAGE_SIZE", YOLO_IMAGE_SIZE)
+        YOLO_CONFIDENCE = settings.get("YOLO_CONFIDENCE", YOLO_CONFIDENCE)
+        YOLO_FRAME_SKIP = settings.get("YOLO_FRAME_SKIP", YOLO_FRAME_SKIP)
+        SERIAL_PORT = settings.get("SERIAL_PORT", SERIAL_PORT)
+        SERIAL_BAUDRATE = settings.get("SERIAL_BAUDRATE", SERIAL_BAUDRATE)
+
+        # Optional log info saat DEBUG_MODE aktif
+        if DEBUG_MODE:
+            print(f"[CONFIG] Loaded settings from {SETTINGS_FILE}")
+            print(f"[CONFIG] Model Path: {YOLO_MODEL_PATH}")
+            print(f"[CONFIG] Camera Index: {CAMERA_INDEX}")
+            print(f"[CONFIG] Confidence: {YOLO_CONFIDENCE}")
+            print(f"[CONFIG] Frame Skip: {YOLO_FRAME_SKIP}")
+            print(f"[CONFIG] Serial Port: {SERIAL_PORT}")
+
+    except Exception as e:
+        print(f"[CONFIG] Failed to load settings.json: {e}")
+else:
+    if DEBUG_MODE:
+        print("[CONFIG] settings.json not found, using default configuration.")
