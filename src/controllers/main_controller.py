@@ -3,6 +3,7 @@ from core.inference_worker import InferenceWorker
 from core.logger import add_log
 from core.utils import convert_frame_to_qpixmap
 from configs import config
+from core.video_capture import VideoCaptureThread  # new
 
 
 class MainController:
@@ -15,7 +16,8 @@ class MainController:
         self.latest_frame = None
 
     def _setup_components(self):
-        self.camera = CameraCapture(config.CAMERA_INDEX, name="center")
+        # self.camera = CameraCapture(config.CAMERA_INDEX, name="center")
+        self.camera = VideoCaptureThread("videos/test2.mp4", name="center")  # video file
         self.inference_worker = InferenceWorker()
 
     def _connect_signals(self):
