@@ -14,6 +14,8 @@ venv/
 env/
 ENV/
 
+/yolov5
+
 # macOS system files
 .DS_Store
 .AppleDouble

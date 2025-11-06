@@ -1,0 +1,10 @@
+{
+    "YOLO_MODEL": "large-tree",
+    "MODEL_PATH": "/Users/macbookpro/Documents/DEVELOPER/SAWIT/DESKTOP/models/large-tree.pt",
+    "CAMERA_INDEX": 0,
+    "YOLO_IMAGE_SIZE": 320,
+    "YOLO_CONFIDENCE": 0.4,
+    "YOLO_FRAME_SKIP": 45,
+    "SERIAL_PORT": "/dev/cu.usbserial-1410",
+    "SERIAL_BAUDRATE": 9600
+}
