@@ -21,3 +21,19 @@ source .venv/bin/activate
 # jalankan aplikasi
 
 uv run python main.py
+
+# common issue
+
+## Install Python 3.10
+
+uv python install 3.10
+
+## Buat environment baru
+
+uv venv --python 3.10
+source .venv/bin/activate
+
+pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
+pip install ultralytics==8.0.20 opencv-python
+
+python -c "import torch; import ultralytics; print(torch.**version**)"

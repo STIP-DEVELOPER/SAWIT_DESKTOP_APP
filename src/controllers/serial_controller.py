@@ -4,9 +4,10 @@ import time
 import queue
 from configs import config
 from core.logger import add_log
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
-class SerialController:
+class SerialController(QThread):
     """
     Handles serial communication with Arduino.
     - Queue-based sender (no thread flood)
@@ -14,12 +15,16 @@ class SerialController:
     - Safe from flooding (rate limiting)
     """
 
+    log = pyqtSignal(str)
+
     def __init__(
         self,
         port: str = config.SERIAL_PORT,
         baudrate: int = config.SERIAL_BAUDRATE,
         min_interval: float = 0.5,  # minimum interval between messages (seconds)
+        parent=None,
     ):
+        super().__init__(parent)
         self.port = port
         self.baudrate = baudrate
         self.lock = threading.Lock()
@@ -50,12 +55,16 @@ class SerialController:
         """Try to connect to the Arduino via serial port."""
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+
+            self.log.emit(f"[SERIAL]-Connected to {self.port} at {self.baudrate} baud.")
+
             add_log(
                 "INFO",
                 "SerialController",
                 f"Connected to {self.port} at {self.baudrate} baud.",
             )
         except Exception as e:
+            self.log.emit(f"[SERIAL]-Failed to connect to {self.port}: {e}")
             add_log(
                 "ERROR", "SerialController", f"Failed to connect to {self.port}: {e}"
             )
@@ -72,11 +81,12 @@ class SerialController:
         now = time.time()
 
         if now - self._last_send_time < self.min_interval:
-            print("[Serial] Too soon since last send — throttling.")
+            self.log.emit(f"[SERIAL]-Too soon since last send — throttling.")
+
             return
 
         if self.status != "READY":
-            print(f"[Serial] Arduino is {self.status}. Command skipped.")
+            self.log.emit(f"[SERIAL]-MCU is {self.status}. Command skipped.")
             return
 
         self._last_send_time = now
@@ -100,7 +110,8 @@ class SerialController:
             except queue.Empty:
                 continue
             except Exception as e:
-                print(f"[Serial] Send error: {e}")
+                self.log.emit(f"[SERIAL]-Send error: {e}")
+
                 add_log("ERROR", "SerialController", f"Send error: {e}")
                 time.sleep(0.2)
 
@@ -126,11 +137,13 @@ class SerialController:
                         self.status = "READY"
 
                     print(f"[Arduino -> Python] {line}")
+
                 else:
                     time.sleep(0.05)
 
             except Exception as e:
-                print(f"[Serial] Read error: {e}")
+                self.log.emit(f"[Serial] Read error: {e}")
+
                 add_log("ERROR", "SerialController", f"Read error: {e}")
                 time.sleep(0.5)
 
@@ -142,4 +155,6 @@ class SerialController:
         self._running = False
         if self.ser and self.ser.is_open:
             self.ser.close()
+            self.log.emit(f"[Serial] - Serial connection closed.")
+
             add_log("INFO", "SerialController", "Serial connection closed.")

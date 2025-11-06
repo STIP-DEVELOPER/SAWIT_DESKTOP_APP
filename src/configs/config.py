@@ -6,11 +6,11 @@ from core.logger import add_log
 # ------------------------------------------------------------
 # YOLO MODEL CONFIGURATION
 # ------------------------------------------------------------
-YOLO_MODEL_PATH = "models/yolov5n.pt"  # Path to the YOLO model file
+YOLO_MODEL_PATH = "models/medium-v2.pt"  # Path to the YOLO model file
 
-YOLO_MODEL_SMALL = "models/yolov5n.pt"
-YOLO_MODEL_MEDIUM = "models/yolov5n.pt"
-YOLO_MODEL_LARGE = "models/yolov5n.pt"
+YOLO_MODEL_SMALL = "models/medium-v2.pt"
+YOLO_MODEL_MEDIUM = "models/medium-v2.pt"
+YOLO_MODEL_LARGE = "models/medium-v2.pt"
 
 
 YOLO_IMAGE_SIZE = 320  # Input image size for YOLO inference
@@ -26,7 +26,7 @@ CAMERA_INDEX = 0  # single center camera
 SHOW_CAMERA_DEFAULT = True
 
 CAMERA_BACKEND = 0  # 0 = Default OpenCV backend (use cv2.CAP_ANY)
-FRAME_DELAY = 0.05  # Delay between frames to limit FPS (~30 FPS)
+FRAME_DELAY = 0.03  # Delay between frames to limit FPS (~30 FPS)
 QUEUE_MAXLEN = 2  # Maximum queue size per camera (for frame buffering)
 
 # ------------------------------------------------------------
@@ -61,10 +61,18 @@ DEBUG_MODE = True  # Enable verbose logging or additional debug output
 
 SETTINGS_FILE = os.path.join(os.getcwd(), "settings.json")
 
+print("======settings=====")
+print(SETTINGS_FILE)
+print("======settings=====")
+
+
 if os.path.exists(SETTINGS_FILE):
     try:
         with open(SETTINGS_FILE, "r") as f:
             settings = json.load(f)
+            print("======settings=====")
+            print(settings)
+            print("======settings=====")
 
         # Update konfigurasi dari file JSON
         YOLO_MODEL = settings.get("YOLO_MODEL", None)

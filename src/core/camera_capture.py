@@ -36,7 +36,7 @@ class CameraCapture(QThread):
                         f"Camera-{self.name}",
                         "Gagal membaca frame dari kamera.",
                     )
-                    time.sleep(0.1)
+                    # time.sleep(0.1)
                     continue
                 self.frame_ready.emit(frame)
                 time.sleep(config.FRAME_DELAY)
