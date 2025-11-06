@@ -7,7 +7,6 @@ from core.logger import add_log
 from PyQt5.QtCore import QThread, pyqtSignal
 
 
-
 class SerialController(QThread):
     """
     Handles serial communication with Arduino.
@@ -15,6 +14,7 @@ class SerialController(QThread):
     - Background read loop to track Arduino status
     - Safe from flooding (rate limiting)
     """
+
     log = pyqtSignal(str)
 
     def __init__(
@@ -22,7 +22,7 @@ class SerialController(QThread):
         port: str = config.SERIAL_PORT,
         baudrate: int = config.SERIAL_BAUDRATE,
         min_interval: float = 0.5,  # minimum interval between messages (seconds)
-        parent=None
+        parent=None,
     ):
         super().__init__(parent)
         self.port = port
@@ -55,11 +55,9 @@ class SerialController(QThread):
         """Try to connect to the Arduino via serial port."""
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
-            
-            self.log.emit(
-                    f"[SERIAL]-Connected to {self.port} at {self.baudrate} baud."
-                )
-            
+
+            self.log.emit(f"[SERIAL]-Connected to {self.port} at {self.baudrate} baud.")
+
             add_log(
                 "INFO",
                 "SerialController",
@@ -113,7 +111,7 @@ class SerialController(QThread):
                 continue
             except Exception as e:
                 self.log.emit(f"[SERIAL]-Send error: {e}")
-                
+
                 add_log("ERROR", "SerialController", f"Send error: {e}")
                 time.sleep(0.2)
 
@@ -139,7 +137,7 @@ class SerialController(QThread):
                         self.status = "READY"
 
                     print(f"[Arduino -> Python] {line}")
-                    
+
                 else:
                     time.sleep(0.05)
 

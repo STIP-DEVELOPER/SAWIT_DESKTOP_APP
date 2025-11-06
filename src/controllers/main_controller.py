@@ -17,7 +17,9 @@ class MainController:
 
     def _setup_components(self):
         # self.camera = CameraCapture(config.CAMERA_INDEX, name="center")
-        self.camera = VideoCaptureThread("videos/test2.mp4", name="center")  # video file
+        self.camera = VideoCaptureThread(
+            "videos/test2.mp4", name="center"
+        )  # video file
         self.inference_worker = InferenceWorker()
 
     def _connect_signals(self):
