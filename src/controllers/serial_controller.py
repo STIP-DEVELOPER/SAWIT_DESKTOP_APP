@@ -31,7 +31,7 @@ class SerialController(QThread):
         self.baudrate = baudrate
         self.lock = threading.Lock()
         self.ser = None
-        self.status = MCUStatus.UNKNOWN
+        self.status = MCUStatus.UNKNOWN.value
         self._running = True
         self._last_send_time = 0
         self.min_interval = min_interval
@@ -89,7 +89,7 @@ class SerialController(QThread):
 
             return
 
-        if self.status != MCUStatus.READY:
+        if self.status != MCUStatus.READY.value:
             self.log.emit(f"[SERIAL]-MCU is {self.status}. Command skipped.")
             return
 
@@ -135,10 +135,10 @@ class SerialController(QThread):
                         continue
 
                     upper = line.upper()
-                    if MCUStatus.BUSY in upper:
-                        self.status = MCUStatus.BUSY
-                    elif MCUStatus.READY in upper:
-                        self.status = MCUStatus.READY
+                    if MCUStatus.BUSY.value in upper:
+                        self.status = MCUStatus.BUSY.value
+                    elif MCUStatus.READY.value in upper:
+                        self.status = MCUStatus.READY.value
 
                     print(f"[Arduino -> Python] {line}")
 

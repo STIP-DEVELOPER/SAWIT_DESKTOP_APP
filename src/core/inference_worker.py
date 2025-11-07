@@ -10,8 +10,10 @@ from core.logger import add_log
 from core.utils import draw_boxes_on_frame
 from configs import config
 from controllers.serial_controller import SerialController
+from helpers.format_log import format_log_text
 
 sys.path.append(os.path.join(os.getcwd(), "yolov5"))
+from enums.log import LogLevel, LogSource
 from models.common import DetectMultiBackend
 from utils.torch_utils import select_device
 from utils.general import non_max_suppression, scale_boxes
@@ -36,9 +38,11 @@ class InferenceWorker(QThread):
         self.running = False
         self.frame_queue = deque(maxlen=config.QUEUE_MAXLEN)
         self.model = None
-        self.device = select_device('')
+        self.device = select_device("")
         self._frame_counter = 0
-        self.serial = SerialController(port=config.SERIAL_PORT, baudrate=config.SERIAL_BAUDRATE)
+        self.serial = SerialController(
+            port=config.SERIAL_PORT, baudrate=config.SERIAL_BAUDRATE
+        )
 
     def run(self):
         """Main loop for inference."""
@@ -67,23 +71,64 @@ class InferenceWorker(QThread):
     def load_new_model(self, new_model_path):
         """Reload YOLOv5 model during runtime."""
         try:
-            self.log.emit(f"[Inference] Loading new model: {new_model_path}")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"Loading new model: {new_model_path}",
+                )
+            )
+
             self.model_path = new_model_path
             self._load_model()
-            self.log.emit(f"[Inference] Model switched successfully → {new_model_path}")
+
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"Model switched successfully → {new_model_path}",
+                )
+            )
         except Exception as e:
-            self.log.emit(f"[Inference] Failed to switch model: {e}")
-            add_log("ERROR", "InferenceWorker", f"Failed to switch model: {e}")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"Failed to switch model: {e}",
+                )
+            )
+            add_log(
+                LogLevel.ERROR.value,
+                LogSource.CORE_INFERENCE.value,
+                f"Failed to switch model: {e}",
+            )
 
     def _load_model(self):
         """Load YOLOv5 model using DetectMultiBackend."""
         try:
-            self.log.emit(f"[Inference] Loading YOLOv5 model: {self.model_path}")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"Loading YOLOv5 model: {self.model_path}",
+                )
+            )
             self.model = DetectMultiBackend(self.model_path, device=self.device)
-            self.log.emit("[Inference] YOLOv5 model loaded successfully.")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"YOLOv5 model loaded successfully.",
+                )
+            )
         except Exception as e:
-            self.log.emit(f"[Inference] Failed to load model: {e}")
-            add_log("ERROR", "InferenceWorker", f"Failed to load model: {e}")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"Failed to load model: {e}",
+                )
+            )
+
+            add_log(
+                LogLevel.ERROR.value,
+                LogSource.CORE_INFERENCE.value,
+                f"Failed to load model: {e}",
+            )
 
     def _process_frame(self, frame):
         """Run YOLOv5 detection on a single frame."""
@@ -107,13 +152,28 @@ class InferenceWorker(QThread):
 
                     message = f"{position}_DETECTED"
                     self.serial.send_message(message)
-                    self.log.emit(f"[Detection] {message}")
+                    self.log.emit(
+                        format_log_text(
+                            source=LogSource.CORE_INFERENCE.value,
+                            message=message,
+                        )
+                    )
 
             self.frame_processed.emit(frame_out)
 
         except Exception as e:
-            self.log.emit(f"[Inference] Error: {e}")
-            add_log("ERROR", "InferenceWorker", f"Inference error: {e}")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_INFERENCE.value,
+                    message=f"Process frame - inference error {e}",
+                )
+            )
+
+            add_log(
+                LogLevel.ERROR.value,
+                LogSource.CORE_INFERENCE.value,
+                f"Process frame - inference error {e}",
+            )
 
     def _predict_v5(self, frame):
         """Run YOLOv5 inference manually."""
@@ -140,8 +200,8 @@ class InferenceWorker(QThread):
         return np.array(boxes), labels, confs
 
     def _get_object_position(self, x_center, frame_width, tolerance=0.1):
-        """Determine object position: LEFT, CENTER, or RIGHT. The CENTER zone is now smaller (tolerance < 0.1) or 10%, so objects in the middle are less likely to be classified as CENTER. """
-        
+        """Determine object position: LEFT, CENTER, or RIGHT. The CENTER zone is now smaller (tolerance < 0.1) or 10%, so objects in the middle are less likely to be classified as CENTER."""
+
         left_threshold = frame_width * (0.5 - tolerance)
         right_threshold = frame_width * (0.5 + tolerance)
 

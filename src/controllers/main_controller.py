@@ -4,7 +4,8 @@ from core.logger import add_log
 from core.utils import convert_frame_to_qpixmap
 from configs import config
 from core.video_capture import VideoCaptureThread
-from enums.log import LogLevel
+from enums.log import LogLevel, LogSource
+from helpers.format_log import format_log_text
 
 
 class MainController:
@@ -34,7 +35,11 @@ class MainController:
         self.ui.toggle_camera_button.clicked.connect(self._toggle_camera_view)
 
     def start(self):
-        self._append_log("[MainController] Starting camera...")
+        self._append_log(
+            format_log_text(
+                source=LogSource.MAIN_CONTROLLER.value, message="Starting camera..."
+            )
+        )
         selected_model = config.YOLO_MODEL_PATH
 
         if "Small-Tree" in selected_model:
@@ -47,19 +52,26 @@ class MainController:
         # Set model path before starting inference
         self.inference_worker.model_path = model_path
         self._append_log(
-            f"[MainController] Selected model: {selected_model} ({model_path})"
+            format_log_text(
+                source=LogSource.MAIN_CONTROLLER.value,
+                message="Selected model: {selected_model} ({model_path}",
+            ),
         )
         self.inference_worker.start()
         self.camera.start()
 
         add_log(
-            LogLevel.INFO,
-            "System",
-            f"[MainController] Selected model: {selected_model} ({model_path})",
+            LogLevel.INFO.value,
+            LogSource.MAIN_CONTROLLER.value,
+            f"Selected model: {selected_model} ({model_path})",
         )
 
     def stop(self):
-        self._append_log("[MainController] Stopping camera...")
+        self._append_log(
+            format_log_text(
+                source=LogSource.MAIN_CONTROLLER.value, message="Stopping camera..."
+            )
+        )
         self.camera.stop()
         self.inference_worker.stop()
 
@@ -94,8 +106,18 @@ class MainController:
         if self.ui.show_camera:
             self.ui.camera_label.show()
             self.ui.toggle_camera_button.setText("Hide Camera")
-            self._append_log("[MainController] Camera view enabled.")
+            self._append_log(
+                format_log_text(
+                    source=LogSource.MAIN_CONTROLLER.value,
+                    message="Camera view enabled.",
+                )
+            )
         else:
             self.ui.camera_label.hide()
             self.ui.toggle_camera_button.setText("Show Camera")
-            self._append_log("[MainController] Camera view hidden.")
+            self._append_log(
+                format_log_text(
+                    source=LogSource.MAIN_CONTROLLER.value,
+                    message="Camera view hidden.",
+                )
+            )

@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
 )
 
 from core.logger import add_log
+from enums.log import LogLevel, LogSource
 
 
 class SettingsPage(QWidget):
@@ -165,7 +166,11 @@ class SettingsPage(QWidget):
                 self.serial_baud.setText(str(settings.get("SERIAL_BAUDRATE", 9600)))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load settings: {e}")
-            add_log("ERROR", "SettingsPage", f"Failed to load settings: {e}")
+            add_log(
+                LogLevel.ERROR.value,
+                LogSource.UI_SETTINGS.value,
+                f"Failed to load settings: {e}",
+            )
 
     def _save_settings(self):
         selected_model = self.yolo_model.currentText()
@@ -186,10 +191,18 @@ class SettingsPage(QWidget):
             with open(self.settings_file, "w") as f:
                 json.dump(data, f, indent=4)
             QMessageBox.information(self, "Success", "Settings saved successfully!")
-            add_log("INFO", "SettingsPage", "Settings saved successfully")
+            add_log(
+                LogLevel.INFO.value,
+                LogSource.UI_SETTINGS.value,
+                "Settings saved successfully",
+            )
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save settings: {e}")
-            add_log("ERROR", "SettingsPage", f"Failed to save settings: {e}")
+            add_log(
+                LogLevel.ERROR.value,
+                LogSource.UI_SETTINGS.value,
+                f"Failed to save settings: {e}",
+            )
 
     def _button_style(self):
         return """

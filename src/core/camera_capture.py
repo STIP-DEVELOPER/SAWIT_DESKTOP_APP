@@ -3,6 +3,8 @@ import time
 from PyQt5.QtCore import QThread, pyqtSignal
 from configs import config
 from core.logger import add_log
+from enums.log import LogLevel, LogSource
+from helpers.format_log import format_log_text
 
 
 class CameraCapture(QThread):
@@ -22,33 +24,70 @@ class CameraCapture(QThread):
             self.cap = cv2.VideoCapture(self.camera_index, config.CAMERA_BACKEND)
             if not self.cap.isOpened():
                 self.log.emit(
-                    f"[Camera-{self.name}] Tidak dapat membuka kamera {self.camera_index}."
+                    format_log_text(
+                        source=LogSource.CORE_CAMERA.value,
+                        message=f"can't open camera {self.camera_index}",
+                    )
                 )
                 return
-            self.log.emit(f"[Camera-{self.name}] Kamera {self.camera_index} aktif.")
+
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_CAMERA.value,
+                    message=f"camera {self.name} {self.camera_index} is cative.",
+                )
+            )
 
             while self.running:
                 ret, frame = self.cap.read()
                 if not ret:
-                    self.log.emit(f"[Camera-{self.name}] Gagal membaca frame.")
+                    self.log.emit(
+                        format_log_text(
+                            source=LogSource.CORE_CAMERA.value,
+                            message=f"camera {self.name} failed open frame",
+                        )
+                    )
+
                     add_log(
-                        "ERROR",
+                        LogLevel.ERROR.value,
                         f"Camera-{self.name}",
-                        "Gagal membaca frame dari kamera.",
+                        "Can't read frame from camera",
                     )
                     # time.sleep(0.1)
                     continue
+
                 self.frame_ready.emit(frame)
                 time.sleep(config.FRAME_DELAY)
 
         except Exception as e:
-            self.log.emit(f"[Camera-{self.name}] Error: {e}")
-            add_log("ERROR", f"Camera-{self.name}", f"Error kamera: {e}")
+            self.log.emit(
+                format_log_text(
+                    source=LogSource.CORE_CAMERA.value,
+                    message=f"camera {self.name} Error: {e}",
+                )
+            )
+
+            add_log(
+                LogLevel.ERROR.value,
+                f"Camera-{self.name}",
+                f"Error: {e}",
+            )
+
         finally:
             if self.cap:
                 self.cap.release()
-                self.log.emit(f"[Camera-{self.name}] Dihentikan.")
-                add_log("INFO", f"Camera-{self.name}", "Kamera dihentikan.")
+                self.log.emit(
+                    format_log_text(
+                        source=LogSource.CORE_CAMERA.value,
+                        message=f"camera {self.name} was stoped",
+                    )
+                )
+
+                add_log(
+                    LogLevel.INFO.value,
+                    f"Camera-{self.name}",
+                    "Camera was stoped",
+                )
 
     def stop(self):
         self.running = False

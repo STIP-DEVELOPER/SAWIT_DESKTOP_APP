@@ -12,6 +12,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QSize
 
 from core.logger import add_log
+from enums.log import LogLevel, LogSource
+from helpers.format_log import format_log_text
 
 
 class HomePage(QWidget):
@@ -128,13 +130,24 @@ class HomePage(QWidget):
         if self.is_running:
             self.start_button.hide()
             self.stop_button.show()
-            self._append_log("[System]-Inference started...")
-            add_log("INFO", "System", "Inference started")
+            self._append_log(
+                format_log_text(
+                    source=LogSource.UI_HOME.value,
+                    message=f"Inference started...",
+                )
+            )
+            add_log(LogLevel.INFO, LogSource.UI_HOME.value, "Inference started")
         else:
             self.stop_button.hide()
             self.start_button.show()
-            self._append_log("[System]-Inference stopped.")
-            add_log("INFO", "System", "Inference stopped")
+
+            self._append_log(
+                format_log_text(
+                    source=LogSource.UI_HOME.value,
+                    message=f"Inference Stopped...",
+                )
+            )
+            add_log(LogLevel.INFO, LogSource.UI_HOME.value, "Inference stopped")
 
     def _append_log(self, text: str):
         """Append message to overlay log box."""

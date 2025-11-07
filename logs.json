@@ -1,14 +1,14 @@
 [
     {
-        "timestamp": "2025-11-07T14:07:02",
+        "timestamp": "2025-11-07T15:19:06",
+        "level": "INFO",
+        "source": "MAIN_CONTROLLER",
+        "message": "Selected model: /Users/macbookpro/Documents/DEVELOPER/SAWIT/DESKTOP/models/small-tree.pt (models/medium-v2.pt)"
+    },
+    {
+        "timestamp": "2025-11-07T15:19:42",
         "level": "INFO",
         "source": "Video-center",
         "message": "Video capture stopped."
-    },
-    {
-        "timestamp": "2025-11-07T14:07:10",
-        "level": "INFO",
-        "source": "SettingsPage",
-        "message": "Settings saved successfully"
     }
 ]

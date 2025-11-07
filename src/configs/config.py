@@ -39,9 +39,8 @@ WINDOW_HEIGHT = 360
 # ------------------------------------------------------------
 # LOGGING CONFIGURATION
 # ------------------------------------------------------------
-LOG_PREFIX_SYSTEM = "[System]"
-LOG_PREFIX_CAMERA = "[Camera]"
-LOG_PREFIX_INFERENCE = "[Inference]"
+
+MAX_LOG_COUNT = 2
 
 # ------------------------------------------------------------
 # SERIAL CONFIG
@@ -61,18 +60,11 @@ DEBUG_MODE = True  # Enable verbose logging or additional debug output
 
 SETTINGS_FILE = os.path.join(os.getcwd(), "settings.json")
 
-print("======settings=====")
-print(SETTINGS_FILE)
-print("======settings=====")
-
 
 if os.path.exists(SETTINGS_FILE):
     try:
         with open(SETTINGS_FILE, "r") as f:
             settings = json.load(f)
-            print("======settings=====")
-            print(settings)
-            print("======settings=====")
 
         # Update konfigurasi dari file JSON
         YOLO_MODEL = settings.get("YOLO_MODEL", None)
