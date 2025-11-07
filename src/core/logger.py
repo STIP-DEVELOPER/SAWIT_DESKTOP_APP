@@ -3,10 +3,9 @@ import os
 from datetime import datetime
 from threading import Lock
 
-from configs.config import MAX_LOG_COUNT
-
 LOG_FILE = os.path.join(os.getcwd(), "logs.json")
 _log_lock = Lock()
+MAX_LOG_COUNT = 5
 
 
 def _read_logs():

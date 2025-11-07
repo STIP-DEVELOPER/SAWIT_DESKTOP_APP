@@ -136,7 +136,7 @@ class HomePage(QWidget):
                     message=f"Inference started...",
                 )
             )
-            add_log(LogLevel.INFO, LogSource.UI_HOME.value, "Inference started")
+            add_log(LogLevel.INFO.value, LogSource.UI_HOME.value, "Inference started")
         else:
             self.stop_button.hide()
             self.start_button.show()
@@ -147,7 +147,7 @@ class HomePage(QWidget):
                     message=f"Inference Stopped...",
                 )
             )
-            add_log(LogLevel.INFO, LogSource.UI_HOME.value, "Inference stopped")
+            add_log(LogLevel.INFO.value, LogSource.UI_HOME.value, "Inference stopped")
 
     def _append_log(self, text: str):
         """Append message to overlay log box."""

@@ -6,7 +6,9 @@ from configs import config
 from core.logger import add_log
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from enums.log import LogLevel, LogSource
 from enums.mcu import MCUStatus
+from helpers.format_log import format_log_text
 
 
 class SerialController(QThread):
@@ -59,19 +61,31 @@ class SerialController(QThread):
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
 
             self.log.emit(
-                f"[SerialController]-Connected to {self.port} at {self.baudrate} baud."
+                format_log_text(
+                    source=LogLevel.INFO.value,
+                    message=f"Connected to {self.port} at {self.baudrate} baud",
+                )
             )
 
             add_log(
-                "INFO",
-                "SerialController",
+                LogLevel.INFO.value,
+                LogSource.SERIAL_CONTROLLER.value,
                 f"Connected to {self.port} at {self.baudrate} baud.",
             )
         except Exception as e:
-            self.log.emit(f"[SERIAL]-Failed to connect to {self.port}: {e}")
-            add_log(
-                "ERROR", "SerialController", f"Failed to connect to {self.port}: {e}"
+            self.log.emit(
+                format_log_text(
+                    source=LogLevel.ERROR.value,
+                    message=f"Failed to connect to {self.port}: {e}",
+                )
             )
+
+            add_log(
+                LogLevel.ERROR.value,
+                LogSource.SERIAL_CONTROLLER.value,
+                f"Failed to connect to {self.port}: {e}",
+            )
+
             self.ser = None
 
     # --------------------------------------------------
@@ -114,9 +128,12 @@ class SerialController(QThread):
             except queue.Empty:
                 continue
             except Exception as e:
-                self.log.emit(f"[SERIAL]-Send error: {e}")
+                add_log(
+                    LogLevel.ERROR.value,
+                    LogSource.SERIAL_CONTROLLER.value,
+                    f"can't send message to serial: {e}",
+                )
 
-                add_log("ERROR", "SerialController", f"Send error: {e}")
                 time.sleep(0.2)
 
     # --------------------------------------------------
@@ -146,9 +163,11 @@ class SerialController(QThread):
                     time.sleep(0.05)
 
             except Exception as e:
-                self.log.emit(f"[Serial] Read error: {e}")
-
-                add_log("ERROR", "SerialController", f"Read error: {e}")
+                add_log(
+                    LogLevel.ERROR.value,
+                    LogSource.SERIAL_CONTROLLER.value,
+                    f"Read error: {e}",
+                )
                 time.sleep(0.5)
 
     # --------------------------------------------------
@@ -159,6 +178,8 @@ class SerialController(QThread):
         self._running = False
         if self.ser and self.ser.is_open:
             self.ser.close()
-            self.log.emit(f"[Serial] - Serial connection closed.")
-
-            add_log("INFO", "SerialController", "Serial connection closed.")
+            add_log(
+                LogLevel.INFO.value,
+                LogSource.SERIAL_CONTROLLER.value,
+                f"Serial connection closed",
+            )

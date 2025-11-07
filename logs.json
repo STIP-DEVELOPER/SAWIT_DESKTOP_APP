@@ -1,12 +1,30 @@
 [
     {
-        "timestamp": "2025-11-07T15:19:06",
+        "timestamp": "2025-11-07T15:37:49",
+        "level": "ERROR",
+        "source": "SERIAL_CONTROLLER",
+        "message": "Failed to connect to /dev/cu.usbserial-1410: [Errno 2] could not open port /dev/cu.usbserial-1410: [Errno 2] No such file or directory: '/dev/cu.usbserial-1410'"
+    },
+    {
+        "timestamp": "2025-11-07T15:37:51",
+        "level": "INFO",
+        "source": "UI_HOME",
+        "message": "Inference started"
+    },
+    {
+        "timestamp": "2025-11-07T15:37:51",
         "level": "INFO",
         "source": "MAIN_CONTROLLER",
         "message": "Selected model: /Users/macbookpro/Documents/DEVELOPER/SAWIT/DESKTOP/models/small-tree.pt (models/medium-v2.pt)"
     },
     {
-        "timestamp": "2025-11-07T15:19:42",
+        "timestamp": "2025-11-07T15:38:23",
+        "level": "INFO",
+        "source": "UI_HOME",
+        "message": "Inference stopped"
+    },
+    {
+        "timestamp": "2025-11-07T15:38:23",
         "level": "INFO",
         "source": "Video-center",
         "message": "Video capture stopped."
