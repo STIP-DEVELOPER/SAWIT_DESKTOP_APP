@@ -37,3 +37,9 @@ pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
 pip install ultralytics==8.0.20 opencv-python
 
 python -c "import torch; import ultralytics; print(torch.**version**)"
+
+# setup yolov5
+
+git clone https://github.com/ultralytics/yolov5.git
+cd yolov5
+pip install -r requirements.txt

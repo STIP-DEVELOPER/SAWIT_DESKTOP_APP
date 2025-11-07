@@ -1,6 +1,6 @@
 {
-    "YOLO_MODEL": "large-tree",
-    "MODEL_PATH": "/Users/macbookpro/Documents/DEVELOPER/SAWIT/DESKTOP/models/large-tree.pt",
+    "YOLO_MODEL": "small-tree",
+    "MODEL_PATH": "/Users/macbookpro/Documents/DEVELOPER/SAWIT/DESKTOP/models/small-tree.pt",
     "CAMERA_INDEX": 0,
     "YOLO_IMAGE_SIZE": 320,
     "YOLO_CONFIDENCE": 0.4,

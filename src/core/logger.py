@@ -5,6 +5,7 @@ from threading import Lock
 
 LOG_FILE = os.path.join(os.getcwd(), "logs.json")
 _log_lock = Lock()
+MAX_LOG_COUNT = 2
 
 
 def _read_logs():
@@ -30,14 +31,19 @@ def add_log(level: str, source: str, message: str):
     """
     with _log_lock:
         logs = _read_logs()
+
         logs.append(
             {
                 "timestamp": datetime.now().isoformat(timespec="seconds"),
-                "level": level.upper(),
+                "level": str(level),
                 "source": source,
                 "message": message,
             }
         )
+
+        if len(logs) > MAX_LOG_COUNT:
+            logs = logs[-MAX_LOG_COUNT:]
+
         _write_logs(logs)
 
 

@@ -6,6 +6,8 @@ from configs import config
 from core.logger import add_log
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from enums.mcu import MCUStatus
+
 
 class SerialController(QThread):
     """
@@ -29,7 +31,7 @@ class SerialController(QThread):
         self.baudrate = baudrate
         self.lock = threading.Lock()
         self.ser = None
-        self.status = "UNKNOWN"  # "READY", "BUSY", or "UNKNOWN"
+        self.status = MCUStatus.UNKNOWN
         self._running = True
         self._last_send_time = 0
         self.min_interval = min_interval
@@ -56,7 +58,9 @@ class SerialController(QThread):
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
 
-            self.log.emit(f"[SERIAL]-Connected to {self.port} at {self.baudrate} baud.")
+            self.log.emit(
+                f"[SerialController]-Connected to {self.port} at {self.baudrate} baud."
+            )
 
             add_log(
                 "INFO",
@@ -85,7 +89,7 @@ class SerialController(QThread):
 
             return
 
-        if self.status != "READY":
+        if self.status != MCUStatus.READY:
             self.log.emit(f"[SERIAL]-MCU is {self.status}. Command skipped.")
             return
 
@@ -131,10 +135,10 @@ class SerialController(QThread):
                         continue
 
                     upper = line.upper()
-                    if "BUSY" in upper:
-                        self.status = "BUSY"
-                    elif "READY" in upper:
-                        self.status = "READY"
+                    if MCUStatus.BUSY in upper:
+                        self.status = MCUStatus.BUSY
+                    elif MCUStatus.READY in upper:
+                        self.status = MCUStatus.READY
 
                     print(f"[Arduino -> Python] {line}")
 

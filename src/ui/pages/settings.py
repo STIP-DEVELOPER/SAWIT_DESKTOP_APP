@@ -63,7 +63,6 @@ class SettingsPage(QWidget):
         self.yolo_model.setMinimumHeight(40)
         self.yolo_model.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # Field lainnya
         self.camera_index = QLineEdit("0")
         self.img_size = QLineEdit("320")
         self.conf = QLineEdit("0.4")
@@ -152,10 +151,12 @@ class SettingsPage(QWidget):
             with open(self.settings_file, "r") as f:
                 settings = json.load(f)
                 yolo_model_name = settings.get("YOLO_MODEL", "small-tree")
+
                 if yolo_model_name in [
                     self.yolo_model.itemText(i) for i in range(self.yolo_model.count())
                 ]:
                     self.yolo_model.setCurrentText(yolo_model_name)
+
                 self.camera_index.setText(str(settings.get("CAMERA_INDEX", 0)))
                 self.img_size.setText(str(settings.get("YOLO_IMAGE_SIZE", 320)))
                 self.conf.setText(str(settings.get("YOLO_CONFIDENCE", 0.4)))
@@ -163,7 +164,7 @@ class SettingsPage(QWidget):
                 self.serial_port.setText(settings.get("SERIAL_PORT", "/dev/ttyUSB0"))
                 self.serial_baud.setText(str(settings.get("SERIAL_BAUDRATE", 9600)))
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"❌ Failed to load settings: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to load settings: {e}")
             add_log("ERROR", "SettingsPage", f"Failed to load settings: {e}")
 
     def _save_settings(self):
@@ -184,10 +185,10 @@ class SettingsPage(QWidget):
         try:
             with open(self.settings_file, "w") as f:
                 json.dump(data, f, indent=4)
-            QMessageBox.information(self, "Success", "✅ Settings saved successfully!")
+            QMessageBox.information(self, "Success", "Settings saved successfully!")
             add_log("INFO", "SettingsPage", "Settings saved successfully")
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"❌ Failed to save settings: {e}")
+            QMessageBox.critical(self, "Error", f"Failed to save settings: {e}")
             add_log("ERROR", "SettingsPage", f"Failed to save settings: {e}")
 
     def _button_style(self):

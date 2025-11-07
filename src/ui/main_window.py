@@ -21,10 +21,7 @@ class MainWindow(QWidget):
         self.setWindowTitle("Smart Tractor UI")
         self.resize(1280, 720)
         self.show_camera = True
-
         self._build_ui()
-
-        # === tampilkan fullscreen saat pertama kali dibuka ===
         self.showFullScreen()
 
     # -------------------------

@@ -8,9 +8,10 @@ from core.logger import add_log
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
-    controller = MainController(window)
+    window.controller = MainController(window)
     window.show()
     sys.exit(app.exec_())
+
     add_log("INFO", "System", "Application started")
 
 

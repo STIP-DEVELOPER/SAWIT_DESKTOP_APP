@@ -31,7 +31,9 @@ class HomePage(QWidget):
         # ======================
         self.camera_container = QWidget(self)
         self.camera_container.setStyleSheet("background-color: transparent;")
-        self.camera_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.camera_container.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
         self.camera_container_layout = QVBoxLayout(self.camera_container)
         self.camera_container_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -40,12 +42,14 @@ class HomePage(QWidget):
         self.camera_label.setAlignment(Qt.AlignCenter)
         self.camera_label.setMinimumSize(640, 480)
         self.camera_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.camera_label.setStyleSheet("""
+        self.camera_label.setStyleSheet(
+            """
             border: 2px solid #444;
             background-color: #111;
             color: #aaa;
             font-size: 14px;
-        """)
+        """
+        )
         self.camera_container_layout.addWidget(self.camera_label)
 
         # ======================
@@ -55,8 +59,9 @@ class HomePage(QWidget):
         self.log_box.setReadOnly(True)
         self.log_box.setFixedWidth(300)
         self.log_box.setFixedHeight(150)
-        self.log_box.move(960, 20)  # posisi awal (kanan atas)
-        self.log_box.setStyleSheet("""
+        self.log_box.move(960, 20)
+        self.log_box.setStyleSheet(
+            """
             QTextEdit {
                 background-color: rgba(0, 0, 0, 150);
                 color: #0f0;
@@ -66,7 +71,8 @@ class HomePage(QWidget):
                 border-radius: 6px;
                 padding: 6px;
             }
-        """)
+        """
+        )
 
         # ======================
         # CONTROL BUTTONS
@@ -122,12 +128,12 @@ class HomePage(QWidget):
         if self.is_running:
             self.start_button.hide()
             self.stop_button.show()
-            self._append_log("▶️ Inference started...")
+            self._append_log("[System]-Inference started...")
             add_log("INFO", "System", "Inference started")
         else:
             self.stop_button.hide()
             self.start_button.show()
-            self._append_log("⏹ Inference stopped.")
+            self._append_log("[System]-Inference stopped.")
             add_log("INFO", "System", "Inference stopped")
 
     def _append_log(self, text: str):
@@ -136,13 +142,6 @@ class HomePage(QWidget):
         self.log_box.verticalScrollBar().setValue(
             self.log_box.verticalScrollBar().maximum()
         )
-
-    def resizeEvent(self, event):
-        """Reposisikan log overlay ketika window diresize"""
-        super().resizeEvent(event)
-        x = self.width() - self.log_box.width() - 20
-        y = 20
-        self.log_box.move(x, y)
 
     def _button_style(self):
         return """
