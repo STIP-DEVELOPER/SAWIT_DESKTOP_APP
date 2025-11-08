@@ -17,9 +17,13 @@ from PyQt5.QtWidgets import (
 
 from core.logger import add_log
 from enums.log import LogLevel, LogSource
+from helpers.icon import get_icon
+from ui.pages.settings.styles import SettingPageStyle
 
 
 class SettingsPage(QWidget):
+    styles = SettingPageStyle()
+
     def __init__(self):
         super().__init__()
         self.settings_file = "settings.json"
@@ -43,24 +47,7 @@ class SettingsPage(QWidget):
         # ======================
         self.yolo_model = QComboBox()
         self.yolo_model.addItems(["small-tree", "medium-tree", "large-tree"])
-        self.yolo_model.setStyleSheet(
-            """
-            QComboBox {
-                background-color: #222;
-                color: #fff;
-                border: 1px solid #555;
-                border-radius: 6px;
-                padding: 6px 10px;
-                font-size: 14px;
-            }
-            QComboBox::drop-down {
-                border: none;
-            }
-            QComboBox:focus {
-                border: 1px solid #00bcd4;
-            }
-            """
-        )
+        self.yolo_model.setStyleSheet(self.styles.model_layout())
         self.yolo_model.setMinimumHeight(40)
         self.yolo_model.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -80,21 +67,7 @@ class SettingsPage(QWidget):
             self.serial_baud,
         ]:
             field.setMinimumHeight(40)
-            field.setStyleSheet(
-                """
-                QLineEdit {
-                    background-color: #222;
-                    color: #fff;
-                    border: 1px solid #555;
-                    border-radius: 6px;
-                    padding: 6px 10px;
-                    font-size: 14px;
-                }
-                QLineEdit:focus {
-                    border: 1px solid #00bcd4;
-                }
-            """
-            )
+            field.setStyleSheet(self.styles.input_field())
             field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         grid.addWidget(QLabel("YOLO Model:"), 0, 0, alignment=Qt.AlignRight)
@@ -124,11 +97,9 @@ class SettingsPage(QWidget):
                 item.setStyleSheet(label_style)
 
         self.save_button = QPushButton(" Save")
-        self.save_button.setIcon(
-            QIcon(os.path.join(os.getcwd(), "assets", "icons", "save.png"))
-        )
+        self.save_button.setIcon(get_icon("save.png"))
         self.save_button.setIconSize(QSize(28, 28))
-        self.save_button.setStyleSheet(self._button_style())
+        self.save_button.setStyleSheet(self.styles.button())
         self.save_button.setFixedHeight(45)
         self.save_button.clicked.connect(self._save_settings)
 
@@ -203,17 +174,3 @@ class SettingsPage(QWidget):
                 LogSource.UI_SETTINGS.value,
                 f"Failed to save settings: {e}",
             )
-
-    def _button_style(self):
-        return """
-            QPushButton {
-                background-color: #222;
-                color: white;
-                border-radius: 8px;
-                padding: 8px 20px;
-                font-size: 15px;
-                font-weight: bold;
-            }
-            QPushButton:hover { background-color: #2196f3; }
-            QPushButton:pressed { background-color: #0d47a1; }
-        """

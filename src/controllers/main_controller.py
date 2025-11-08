@@ -9,10 +9,10 @@ from helpers.format_log import format_log_text
 
 
 class MainController:
-    """Manages single camera, inference, and UI updates."""
+    """Manages single camera, inference, and main_window updates."""
 
-    def __init__(self, ui):
-        self.ui = ui
+    def __init__(self, main_window):
+        self.main_window = main_window
         self._setup_components()
         self._connect_signals()
         self.latest_frame = None
@@ -29,10 +29,11 @@ class MainController:
         self.inference_worker.frame_processed.connect(self._on_inference_result)
         self.inference_worker.log.connect(self._append_log)
 
-        self.ui.start_button.clicked.connect(self.start)
-        self.ui.stop_button.clicked.connect(self.stop)
-        self.ui.exit_button.clicked.connect(self._exit_app)
-        self.ui.toggle_camera_button.clicked.connect(self._toggle_camera_view)
+        self.main_window.start_button.clicked.connect(self.start)
+        self.main_window.stop_button.clicked.connect(self.stop)
+        self.main_window.exit_button.clicked.connect(self._exit_app)
+
+        self.main_window.toggle_camera_button.clicked.connect(self._toggle_camera_view)
 
     def start(self):
         self._append_log(
@@ -77,35 +78,35 @@ class MainController:
 
     def _exit_app(self):
         self.stop()
-        self.ui.close()
+        self.main_window.close()
 
     def _on_frame(self, frame):
         self.latest_frame = frame
         if frame is not None:
-            # Only render to UI if camera view is shown
-            if self.ui.show_camera:
-                self._update_view(self.ui.camera_label, frame)
+            # Only render to main_window if camera view is shown
+            if self.main_window.show_camera:
+                self._update_view(self.main_window.camera_label, frame)
             # Still process frame for inference even if camera is hidden
             self.inference_worker.submit_frame(frame)
 
     def _on_inference_result(self, frame):
-        if self.ui.show_camera:
-            self._update_view(self.ui.camera_label, frame)
+        if self.main_window.show_camera:
+            self._update_view(self.main_window.camera_label, frame)
 
     def _update_view(self, label, frame):
         pixmap = convert_frame_to_qpixmap(frame)
         label.setPixmap(pixmap)
 
     def _append_log(self, text):
-        self.ui.log_box.append(text)
+        self.main_window.log_box.append(text)
 
     def _toggle_camera_view(self):
         """Toggle visibility of camera display, without stopping detection."""
-        self.ui.show_camera = not self.ui.show_camera
+        self.main_window.show_camera = not self.main_window.show_camera
 
-        if self.ui.show_camera:
-            self.ui.camera_label.show()
-            self.ui.toggle_camera_button.setText("Hide Camera")
+        if self.main_window.show_camera:
+            self.main_window.camera_label.show()
+            self.main_window.toggle_camera_button.setText("Hide Camera")
             self._append_log(
                 format_log_text(
                     source=LogSource.MAIN_CONTROLLER.value,
@@ -113,8 +114,8 @@ class MainController:
                 )
             )
         else:
-            self.ui.camera_label.hide()
-            self.ui.toggle_camera_button.setText("Show Camera")
+            self.main_window.camera_label.hide()
+            self.main_window.toggle_camera_button.setText("Show Camera")
             self._append_log(
                 format_log_text(
                     source=LogSource.MAIN_CONTROLLER.value,
